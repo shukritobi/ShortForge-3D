@@ -83,6 +83,7 @@ class Kit:
     def __init__(self):
         self.groups={}
         self.paths={}
+        self.cutaway_covers=[]
         self.colors={
             "ground": material("grass",(.32,.49,.31)),
             "soil": material("soil",(.45,.29,.19)),
@@ -104,9 +105,22 @@ class Kit:
         self.groups.setdefault(name,[]).extend(objects)
         return objects
 
-    def scene_ground(self):
-        self.put("ground",cube("earth", (0,0,-1.3), (34,27,2.5), self.colors["soil"]))
-        self.put("ground",cube("grass_top", (0,0,-.025), (34,27,.07), self.colors["ground"]))
+    def scene_ground(self, *, cutaway=False):
+        if cutaway:
+            # Exposed trench is physically open, not a flat texture pretending
+            # to show buried pipes. Its cover disappears at the cutaway beat.
+            self.put("ground",
+                cube("earth_north",(0,5.2,-1.3),(34,16.6,2.5),self.colors["soil"]),
+                cube("grass_north",(0,5.2,-.025),(34,16.6,.07),self.colors["ground"]),
+                cube("earth_south",(0,-9.25,-1.3),(34,8.5,2.5),self.colors["soil"]),
+                cube("grass_south",(0,-9.25,-.025),(34,8.5,.07),self.colors["ground"]))
+            cover=cube("trench_grass_cover",(0,-4.05,-.04),
+                       (34,1.9,.085),self.colors["ground"])
+            self.put("ground",cover)
+            self.cutaway_covers.append(cover)
+        else:
+            self.put("ground",cube("earth", (0,0,-1.3), (34,27,2.5), self.colors["soil"]))
+            self.put("ground",cube("grass_top", (0,0,-.025), (34,27,.07), self.colors["ground"]))
         self.put("ground",cube("road", (0,-7.2,.02), (34,3.4,.055), self.colors["road"]))
         for x in range(-14,15,4):
             self.put("ground",cube("lane_"+str(x),(x,-7.2,.056),(1.65,.08,.009),self.colors["white"]))
@@ -127,7 +141,7 @@ class Kit:
         return a
 
     def water(self):
-        self.scene_ground()
+        self.scene_ground(cutaway=True)
         for i,(x,y) in enumerate(((-11,4),(-7,4),(-3,4),(-11,-2),(-7,-2),(-3,-2))):
             self.put("neighbourhood",*self.house(f"water_home_{i}",x,y,
                       tint=(.80+.012*i,.76,.66+.014*i)))

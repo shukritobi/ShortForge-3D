@@ -223,9 +223,18 @@ def animate(story,kit,cam,scene):
             if typ=="flow":
                 flow_dots(kit,target,start,end)
             if typ=="cutaway":
-                # Section camera makes the cross-section/pipe interface visible.
-                # Terrain remains undistorted; full mesh booleans are not needed.
-                pass
+                # Open the previously capped excavation for a readable
+                # underground cross-section. Only authorized cover objects
+                # are affected; housing and structural assets stay intact.
+                for cover in kit.cutaway_covers:
+                    cover.hide_render=False
+                    cover.hide_viewport=False
+                    cover.keyframe_insert(data_path="hide_render",frame=max(1,start-1))
+                    cover.keyframe_insert(data_path="hide_viewport",frame=max(1,start-1))
+                    cover.hide_render=True
+                    cover.hide_viewport=True
+                    cover.keyframe_insert(data_path="hide_render",frame=start)
+                    cover.keyframe_insert(data_path="hide_viewport",frame=start)
     scene.frame_set(1)
 
 
