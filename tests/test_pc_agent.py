@@ -32,7 +32,7 @@ def test_missing_blender_writes_diagnostics(tmp_path, monkeypatch):
     monkeypatch.setattr(pc_agent, "OUTPUT", tmp_path / "output")
     monkeypatch.setattr(pc_agent, "find_blender", lambda arg=None: None)
     monkeypatch.setattr(pc_agent, "probe", lambda *a, **k: {"ok": False})
-    summary, folder = pc_agent.run_task("doctor")
+    summary, folder = pc_agent.run_task("doctor", out=str(tmp_path / "output" / "water_tower"))
     assert summary["status"] == "needs_setup"
     assert (folder / "doctor.json").is_file()
     assert (folder / "events.jsonl").is_file()
@@ -42,6 +42,6 @@ def test_missing_blender_writes_diagnostics(tmp_path, monkeypatch):
 def test_preview_missing_blender_does_not_spawn(tmp_path, monkeypatch):
     monkeypatch.setattr(pc_agent, "OUTPUT", tmp_path / "output")
     monkeypatch.setattr(pc_agent, "find_blender", lambda arg=None: None)
-    summary, _ = pc_agent.run_task("preview")
+    summary, _ = pc_agent.run_task("preview", out=str(tmp_path / "output" / "water_tower"))
     assert summary["status"] == "failed"
     assert summary["error"].startswith("Blender not ready")
