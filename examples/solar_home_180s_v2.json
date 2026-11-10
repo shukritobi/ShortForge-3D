@@ -1,0 +1,373 @@
+{
+  "version": 2,
+  "title": "How Solar Panels Power a Home",
+  "duration": 180,
+  "fps": 24,
+  "resolution": [
+    720,
+    1280
+  ],
+  "scene_template": "solar_home",
+  "beats": [
+    {
+      "id": "beat_01",
+      "start": 0,
+      "end": 7.5,
+      "problem": "Your roof receives sunlight through much of the daytime.",
+      "solution": "Visual demonstration: appear sun",
+      "narration": "Your roof receives sunlight through much of the daytime.",
+      "camera": "establish",
+      "actions": [
+        {
+          "type": "appear",
+          "target": "sun"
+        }
+      ]
+    },
+    {
+      "id": "beat_02",
+      "start": 7.5,
+      "end": 15,
+      "problem": "But sunlight alone cannot run the lights inside your home.",
+      "solution": "Visual demonstration: appear house",
+      "narration": "But sunlight alone cannot run the lights inside your home.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "appear",
+          "target": "house"
+        }
+      ]
+    },
+    {
+      "id": "beat_03",
+      "start": 15,
+      "end": 22.5,
+      "problem": "So you mount solar panels across a suitable roof surface.",
+      "solution": "Visual demonstration: assemble panels",
+      "narration": "So you mount solar panels across a suitable roof surface.",
+      "camera": "overhead",
+      "actions": [
+        {
+          "type": "assemble",
+          "target": "panels"
+        }
+      ]
+    },
+    {
+      "id": "beat_04",
+      "start": 22.5,
+      "end": 30,
+      "problem": "Each panel contains many small photovoltaic cells.",
+      "solution": "Visual demonstration: highlight panels",
+      "narration": "Each panel contains many small photovoltaic cells.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "panels"
+        }
+      ]
+    },
+    {
+      "id": "beat_05",
+      "start": 30,
+      "end": 37.5,
+      "problem": "Light arriving at the cells can drive an electric current.",
+      "solution": "Visual demonstration: flow sun",
+      "narration": "Light arriving at the cells can drive an electric current.",
+      "camera": "follow",
+      "actions": [
+        {
+          "type": "flow",
+          "target": "sun"
+        }
+      ]
+    },
+    {
+      "id": "beat_06",
+      "start": 37.5,
+      "end": 45,
+      "problem": "The panels produce direct current, often called DC.",
+      "solution": "Visual demonstration: pulse panels",
+      "narration": "The panels produce direct current, often called DC.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "pulse",
+          "target": "panels"
+        }
+      ]
+    },
+    {
+      "id": "beat_07",
+      "start": 45,
+      "end": 52.5,
+      "problem": "Household appliances usually expect alternating current, or AC.",
+      "solution": "Visual demonstration: highlight house",
+      "narration": "Household appliances usually expect alternating current, or AC.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "house"
+        }
+      ]
+    },
+    {
+      "id": "beat_08",
+      "start": 52.5,
+      "end": 60,
+      "problem": "So the panel wiring feeds electricity toward an inverter.",
+      "solution": "Visual demonstration: appear inverter",
+      "narration": "So the panel wiring feeds electricity toward an inverter.",
+      "camera": "follow",
+      "actions": [
+        {
+          "type": "appear",
+          "target": "inverter"
+        }
+      ]
+    },
+    {
+      "id": "beat_09",
+      "start": 60,
+      "end": 67.5,
+      "problem": "The inverter converts DC into usable alternating current.",
+      "solution": "Visual demonstration: pulse inverter",
+      "narration": "The inverter converts DC into usable alternating current.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "pulse",
+          "target": "inverter"
+        }
+      ]
+    },
+    {
+      "id": "beat_10",
+      "start": 67.5,
+      "end": 75,
+      "problem": "Safety switches and protective devices guard the electrical circuits.",
+      "solution": "Visual demonstration: highlight inverter",
+      "narration": "Safety switches and protective devices guard the electrical circuits.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "inverter"
+        }
+      ]
+    },
+    {
+      "id": "beat_11",
+      "start": 75,
+      "end": 82.5,
+      "problem": "That output can power lights, fans and other household loads.",
+      "solution": "Visual demonstration: appear lights",
+      "narration": "That output can power lights, fans and other household loads.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "appear",
+          "target": "lights"
+        }
+      ]
+    },
+    {
+      "id": "beat_12",
+      "start": 82.5,
+      "end": 90,
+      "problem": "On a bright day, production may exceed what you use.",
+      "solution": "Visual demonstration: pulse meter",
+      "narration": "On a bright day, production may exceed what you use.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "pulse",
+          "target": "meter"
+        }
+      ]
+    },
+    {
+      "id": "beat_13",
+      "start": 90,
+      "end": 97.5,
+      "problem": "Some systems export surplus electricity to the local grid.",
+      "solution": "Visual demonstration: flow grid",
+      "narration": "Some systems export surplus electricity to the local grid.",
+      "camera": "section",
+      "actions": [
+        {
+          "type": "flow",
+          "target": "grid"
+        }
+      ]
+    },
+    {
+      "id": "beat_14",
+      "start": 97.5,
+      "end": 105,
+      "problem": "Other systems send part of that energy into a battery.",
+      "solution": "Visual demonstration: appear battery",
+      "narration": "Other systems send part of that energy into a battery.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "appear",
+          "target": "battery"
+        }
+      ]
+    },
+    {
+      "id": "beat_15",
+      "start": 105,
+      "end": 112.5,
+      "problem": "A compatible battery stores energy for use at another time.",
+      "solution": "Visual demonstration: pulse battery",
+      "narration": "A compatible battery stores energy for use at another time.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "pulse",
+          "target": "battery"
+        }
+      ]
+    },
+    {
+      "id": "beat_16",
+      "start": 112.5,
+      "end": 120,
+      "problem": "When clouds arrive, the panels generate less electricity.",
+      "solution": "Visual demonstration: highlight sun",
+      "narration": "When clouds arrive, the panels generate less electricity.",
+      "camera": "establish",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "sun"
+        }
+      ]
+    },
+    {
+      "id": "beat_17",
+      "start": 120,
+      "end": 127.5,
+      "problem": "The home may then draw from the battery or grid.",
+      "solution": "Visual demonstration: highlight grid",
+      "narration": "The home may then draw from the battery or grid.",
+      "camera": "follow",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "grid"
+        }
+      ]
+    },
+    {
+      "id": "beat_18",
+      "start": 127.5,
+      "end": 135,
+      "problem": "A meter measures electricity flowing between home and network.",
+      "solution": "Visual demonstration: appear meter",
+      "narration": "A meter measures electricity flowing between home and network.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "appear",
+          "target": "meter"
+        }
+      ]
+    },
+    {
+      "id": "beat_19",
+      "start": 135,
+      "end": 142.5,
+      "problem": "Monitoring software tracks generation and household consumption.",
+      "solution": "Visual demonstration: pulse meter",
+      "narration": "Monitoring software tracks generation and household consumption.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "pulse",
+          "target": "meter"
+        }
+      ]
+    },
+    {
+      "id": "beat_20",
+      "start": 142.5,
+      "end": 150,
+      "problem": "Panel angle and shade strongly influence the daily output.",
+      "solution": "Visual demonstration: highlight panels",
+      "narration": "Panel angle and shade strongly influence the daily output.",
+      "camera": "overhead",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "panels"
+        }
+      ]
+    },
+    {
+      "id": "beat_21",
+      "start": 150,
+      "end": 157.5,
+      "problem": "Installers also allow for heat, weather and roof loading.",
+      "solution": "Visual demonstration: highlight panels",
+      "narration": "Installers also allow for heat, weather and roof loading.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "panels"
+        }
+      ]
+    },
+    {
+      "id": "beat_22",
+      "start": 157.5,
+      "end": 165,
+      "problem": "The inverter and wiring require proper professional installation.",
+      "solution": "Visual demonstration: highlight inverter",
+      "narration": "The inverter and wiring require proper professional installation.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "inverter"
+        }
+      ]
+    },
+    {
+      "id": "beat_23",
+      "start": 165,
+      "end": 172.5,
+      "problem": "Solar still needs a safe backup when sunlight fades.",
+      "solution": "Visual demonstration: highlight battery",
+      "narration": "Solar still needs a safe backup when sunlight fades.",
+      "camera": "reveal",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "battery"
+        }
+      ]
+    },
+    {
+      "id": "beat_24",
+      "start": 172.5,
+      "end": 180,
+      "problem": "Together these parts turn daylight into useful household electricity.",
+      "solution": "Visual demonstration: highlight house",
+      "narration": "Together these parts turn daylight into useful household electricity.",
+      "camera": "reveal",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "house"
+        }
+      ]
+    }
+  ]
+}

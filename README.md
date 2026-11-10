@@ -1,4 +1,32 @@
-# ShortForge 3D | Phase 1
+# ShortForge 3D
+
+## Phase 2: reusable long-form 3D videos (stacked PR)
+
+Phase 2 adds a **second storyboard/renderer generation**, keeping the proven
+40-second water-tower pipeline as a working baseline. It supports **60, 75,
+90, 120 and 180 second** videos with registered mechanism-based scene packs,
+starting with water distribution and rooftop solar energy. Both use shared
+parametric houses, materials, cameras, object animation, TTS, captions,
+resume-aware frames and FFmpeg composition.
+
+The new renderer and profiles need their **first real PC preview** and should
+not be treated as production-quality visuals until reviewed. Other topics
+require registered, vetted scene and action packs; unsupported topics are
+rejected rather than depicted inaccurately.
+
+Read [Phase 2 setup and limits](docs/PHASE2.md). Create an example with:
+
+```powershell
+shortforge plan --engine library --topic "solar panels" --duration 120 --output output/solar_home_story.json
+shortforge validate output/solar_home_story.json
+```
+
+For a six-frame Blender preview use the provided
+`scripts/ShortForge-Phase2-Preview.bat` launcher. No YouTube publishing.
+
+---
+
+ | Phase 1
 
 Local-first, original, procedural **educational YouTube Shorts**. This implementation
 builds a continuous stylized 3D water-tower neighbourhood in Blender, narrates

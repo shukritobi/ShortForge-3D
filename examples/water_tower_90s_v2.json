@@ -1,0 +1,283 @@
+{
+  "version": 2,
+  "title": "How a Water Tower Supplies a Neighbourhood",
+  "duration": 90,
+  "fps": 24,
+  "resolution": [
+    720,
+    1280
+  ],
+  "scene_template": "water_distribution",
+  "beats": [
+    {
+      "id": "beat_01",
+      "start": 0,
+      "end": 5,
+      "problem": "A city needs clean water at every tap, every hour.",
+      "solution": "Visual demonstration: appear neighbourhood",
+      "narration": "A city needs clean water at every tap, every hour.",
+      "camera": "establish",
+      "actions": [
+        {
+          "type": "appear",
+          "target": "neighbourhood"
+        }
+      ]
+    },
+    {
+      "id": "beat_02",
+      "start": 5,
+      "end": 10,
+      "problem": "One small pump can serve a home, but demand keeps growing.",
+      "solution": "Visual demonstration: appear pump",
+      "narration": "One small pump can serve a home, but demand keeps growing.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "appear",
+          "target": "pump"
+        }
+      ]
+    },
+    {
+      "id": "beat_03",
+      "start": 10,
+      "end": 15,
+      "problem": "Water pressure begins to fall across the nearby streets.",
+      "solution": "Visual demonstration: highlight branch",
+      "narration": "Water pressure begins to fall across the nearby streets.",
+      "camera": "section",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "branch"
+        }
+      ]
+    },
+    {
+      "id": "beat_04",
+      "start": 15,
+      "end": 20,
+      "problem": "A larger pump moves more water, but demand still fluctuates.",
+      "solution": "Visual demonstration: pulse pump",
+      "narration": "A larger pump moves more water, but demand still fluctuates.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "pulse",
+          "target": "pump"
+        }
+      ]
+    },
+    {
+      "id": "beat_05",
+      "start": 20,
+      "end": 25,
+      "problem": "During quiet hours, that extra capacity often sits unused.",
+      "solution": "Visual demonstration: highlight pump",
+      "narration": "During quiet hours, that extra capacity often sits unused.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "pump"
+        }
+      ]
+    },
+    {
+      "id": "beat_06",
+      "start": 25,
+      "end": 30,
+      "problem": "So engineers build a storage tank above the surrounding homes.",
+      "solution": "Visual demonstration: assemble tower",
+      "narration": "So engineers build a storage tank above the surrounding homes.",
+      "camera": "establish",
+      "actions": [
+        {
+          "type": "assemble",
+          "target": "tower"
+        }
+      ]
+    },
+    {
+      "id": "beat_07",
+      "start": 30,
+      "end": 35,
+      "problem": "Strong columns carry the enormous weight of the elevated tank.",
+      "solution": "Visual demonstration: highlight tower",
+      "narration": "Strong columns carry the enormous weight of the elevated tank.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "tower"
+        }
+      ]
+    },
+    {
+      "id": "beat_08",
+      "start": 35,
+      "end": 40,
+      "problem": "Braces help resist side forces, including the push of wind.",
+      "solution": "Visual demonstration: pulse tower",
+      "narration": "Braces help resist side forces, including the push of wind.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "pulse",
+          "target": "tower"
+        }
+      ]
+    },
+    {
+      "id": "beat_09",
+      "start": 40,
+      "end": 45,
+      "problem": "Pumps fill the tank when supply and demand allow it.",
+      "solution": "Visual demonstration: flow tank",
+      "narration": "Pumps fill the tank when supply and demand allow it.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "flow",
+          "target": "tank"
+        }
+      ]
+    },
+    {
+      "id": "beat_10",
+      "start": 45,
+      "end": 50,
+      "problem": "The tank stores water high above the streets below.",
+      "solution": "Visual demonstration: highlight tank",
+      "narration": "The tank stores water high above the streets below.",
+      "camera": "establish",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "tank"
+        }
+      ]
+    },
+    {
+      "id": "beat_11",
+      "start": 50,
+      "end": 55,
+      "problem": "Water can then descend through a large distribution main.",
+      "solution": "Visual demonstration: flow main",
+      "narration": "Water can then descend through a large distribution main.",
+      "camera": "follow",
+      "actions": [
+        {
+          "type": "flow",
+          "target": "main"
+        }
+      ]
+    },
+    {
+      "id": "beat_12",
+      "start": 55,
+      "end": 60,
+      "problem": "The main runs underground along the roads of the neighbourhood.",
+      "solution": "Visual demonstration: cutaway ground",
+      "narration": "The main runs underground along the roads of the neighbourhood.",
+      "camera": "section",
+      "actions": [
+        {
+          "type": "cutaway",
+          "target": "ground"
+        }
+      ]
+    },
+    {
+      "id": "beat_13",
+      "start": 60,
+      "end": 65,
+      "problem": "Smaller service pipes branch off toward each house.",
+      "solution": "Visual demonstration: appear branch",
+      "narration": "Smaller service pipes branch off toward each house.",
+      "camera": "section",
+      "actions": [
+        {
+          "type": "appear",
+          "target": "branch"
+        }
+      ]
+    },
+    {
+      "id": "beat_14",
+      "start": 65,
+      "end": 70,
+      "problem": "The elevated supply helps smooth rapid changes in water demand.",
+      "solution": "Visual demonstration: pulse tank",
+      "narration": "The elevated supply helps smooth rapid changes in water demand.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "pulse",
+          "target": "tank"
+        }
+      ]
+    },
+    {
+      "id": "beat_15",
+      "start": 70,
+      "end": 75,
+      "problem": "Control valves can isolate a section for maintenance.",
+      "solution": "Visual demonstration: highlight branch",
+      "narration": "Control valves can isolate a section for maintenance.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "branch"
+        }
+      ]
+    },
+    {
+      "id": "beat_16",
+      "start": 75,
+      "end": 80,
+      "problem": "Sensors tell operators when the tank needs refilling.",
+      "solution": "Visual demonstration: pulse tank",
+      "narration": "Sensors tell operators when the tank needs refilling.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "pulse",
+          "target": "tank"
+        }
+      ]
+    },
+    {
+      "id": "beat_17",
+      "start": 80,
+      "end": 85,
+      "problem": "This storage also adds resilience during short interruptions.",
+      "solution": "Visual demonstration: highlight tank",
+      "narration": "This storage also adds resilience during short interruptions.",
+      "camera": "reveal",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "tank"
+        }
+      ]
+    },
+    {
+      "id": "beat_18",
+      "start": 85,
+      "end": 90,
+      "problem": "And that is how one water tower helps supply a neighbourhood.",
+      "solution": "Visual demonstration: highlight neighbourhood",
+      "narration": "And that is how one water tower helps supply a neighbourhood.",
+      "camera": "reveal",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "neighbourhood"
+        }
+      ]
+    }
+  ]
+}

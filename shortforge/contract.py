@@ -23,6 +23,9 @@ class StoryboardError(ValueError):
 def validate_storyboard(data: dict) -> dict:
     if not isinstance(data, dict):
         raise StoryboardError("storyboard must be an object")
+    if data.get("version") == 2:
+        from .story_v2 import validate_story_v2
+        return validate_story_v2(data)
     if data.get("version") != 1:
         raise StoryboardError("unsupported storyboard version")
     if data.get("duration") != SECONDS or data.get("fps") != FPS:

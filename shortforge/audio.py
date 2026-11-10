@@ -48,14 +48,14 @@ def voice_python(provider: str, override: str | None = None) -> str:
     return str(binary.resolve())
 
 
-def create_silent_audio(output: str | Path, *, ffmpeg="ffmpeg") -> Path:
+def create_silent_audio(output: str | Path, *, duration: float = 40, ffmpeg="ffmpeg") -> Path:
     out = Path(output)
     out.mkdir(parents=True, exist_ok=True)
     path = out / "narration.wav"
     subprocess.run([
         require_program(ffmpeg), "-hide_banner", "-loglevel", "error", "-y",
         "-f", "lavfi", "-i", "anullsrc=r=24000:cl=mono",
-        "-t", "40", "-c:a", "pcm_s16le", str(path)
+        "-t", str(duration), "-c:a", "pcm_s16le", str(path)
     ], check=True)
     return path
 
@@ -64,7 +64,7 @@ def create_audio(story: dict, output: str | Path, *, provider="qwen",
                  voice="Ryan", model_id: str | None = None,
                  python: str | None = None,
                  ffmpeg="ffmpeg", ffprobe="ffprobe") -> Path:
-    """Run external TTS worker once, fit audio per beat, produce 40-second WAV.
+    """Run external TTS worker once, fit audio per beat, produce story-length WAV.
 
     First successful Qwen/Kokoro run downloads open model weights into the HF
     cache. Later synthesis is local; no API keys or usage fees are required.
@@ -102,8 +102,11 @@ def create_audio(story: dict, output: str | Path, *, provider="qwen",
         raw = beats_dir / f"beat_{index:02d}_raw.wav"
         allotted = beat["end"] - beat["start"]
         duration = probe_duration(raw, ffprobe) if raw.is_file() and raw.stat().st_size > 100 else None
-        tempo = duration / max(.5, allotted-.15) if duration is not None else None
-        ok = tempo is not None and .65 <= tempo <= 1.7
+        natural_tempo = duration / max(.5, allotted-.15) if duration is not None else None
+        # Avoid unnatural slow speech in long scenes: speak at native speed,
+        # then let the scene breathe with silence at its tail.
+        tempo = max(1.0, natural_tempo) if natural_tempo is not None else None
+        ok = tempo is not None and tempo <= 1.7
         rows.append({
             "beat": beat["id"], "start_sec": beat["start"],
             "end_sec": beat["end"], "word_count": len(beat["narration"].split()),
@@ -119,7 +122,7 @@ def create_audio(story: dict, output: str | Path, *, provider="qwen",
         "status": "needs_review" if problems else "passed",
         "beats": rows, "failed_count": len(problems),
         "total_generated_speech_sec": round(sum(x["spoken_audio_sec"] or 0 for x in rows),3),
-        "total_storyboard_sec": 40,
+        "total_storyboard_sec": story["duration"],
         "message": "Audio length is NOT synthesis computation time. Do not compress speech above 1.7x.",
     }
     (out / "timing_report.json").write_text(json.dumps(timing_report,indent=2)+"\n",encoding="utf-8")
@@ -156,8 +159,8 @@ def create_audio(story: dict, output: str | Path, *, provider="qwen",
         "-c:a", "pcm_s16le", str(output_file)
     ], check=True)
     actual = probe_duration(output_file, ffprobe)
-    if abs(actual-40) > .15:
-        raise RuntimeError(f"Narration duration {actual:.3f}s, expected 40s")
+    if abs(actual-story["duration"]) > .15:
+        raise RuntimeError(f"Narration duration {actual:.3f}s, expected {story['duration']}s")
     (out / "voice_manifest.json").write_text(
         json.dumps({
             "provider": provider, "voice": voice,

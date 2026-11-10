@@ -13,7 +13,8 @@ def compose(story: dict, output: str | Path, *, ffmpeg="ffmpeg") -> Path:
     out = Path(output).resolve()
     frames = out/"frames"
     wav = out/"audio"/"narration.wav"
-    missing = [i for i in range(1, FPS*SECONDS+1) if not (frames/f"frame_{i:06d}.png").is_file()]
+    duration = story["duration"]
+    missing = [i for i in range(1, FPS*duration+1) if not (frames/f"frame_{i:06d}.png").is_file()]
     if missing:
         raise FileNotFoundError(f"missing {len(missing)} Blender frames; first missing frame: {missing[0]:06d}")
     if not wav.exists():
@@ -33,13 +34,14 @@ def compose(story: dict, output: str | Path, *, ffmpeg="ffmpeg") -> Path:
          "-map","[sub]","-map","[aud]",
          "-c:v","libx264","-preset","medium","-crf","18",
          "-pix_fmt","yuv420p","-c:a","aac","-b:a","160k",
-         "-t",str(SECONDS),"-movflags","+faststart",str(video)],
+         "-t",str(duration),"-ar","48000","-movflags","+faststart",str(video)],
         cwd=str(out/"captions"),check=True,
     )
     return video
 
 
-def inspect_video(path: str | Path, *, ffprobe="ffprobe") -> dict:
+def inspect_video(path: str | Path, *, ffprobe="ffprobe",
+                  expected_duration: float = SECONDS) -> dict:
     r = subprocess.run(
         [require_program(ffprobe),"-v","error","-show_streams","-show_format",
          "-of","json",str(path)],
@@ -56,7 +58,7 @@ def inspect_video(path: str | Path, *, ffprobe="ffprobe") -> dict:
     n,d = (int(x) for x in ratio.split("/"))
     fps = n/d if d else 0
     checks = {
-        "duration_ok": abs(duration-SECONDS) <= .35,
+        "duration_ok": abs(duration-expected_duration) <= .35,
         "resolution_ok": (v["width"],v["height"]) == (WIDTH,HEIGHT),
         "fps_ok": abs(fps-FPS) < .05,
         "audio_present": True,

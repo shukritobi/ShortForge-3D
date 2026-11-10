@@ -28,18 +28,22 @@ def render(storyboard: Path, output: Path, *, blender="blender", preview_frame=N
         raise RuntimeError("Blender not detected. Run: python scripts/pc_agent.py doctor; or pass --blender with the full blender.exe path")
     if preview_frame is not None and preview_frames is not None:
         raise ValueError("Choose either --preview-frame or --preview-frames")
+    story = load_storyboard(storyboard)
+    frame_total = story["duration"] * story["fps"]
     if preview_frames is not None and (not 2 <= len(preview_frames) <= 6 or
                                        len(set(preview_frames)) != len(preview_frames) or
-                                       any(not 1 <= x <= 960 for x in preview_frames)):
-        raise ValueError("Expected 2-6 distinct review frames between 1 and 960")
-    command = [executable,"-b","--python",str(BLENDER_SCRIPT),
+                                       any(not 1 <= x <= frame_total for x in preview_frames)):
+        raise ValueError(f"Expected 2-6 distinct review frames between 1 and {frame_total}")
+    renderer = (ROOT/"scripts"/"blender_v2.py"
+                if story["version"] == 2 else BLENDER_SCRIPT)
+    command = [executable,"-b","--python",str(renderer),
                "--","--storyboard",str(storyboard.resolve()),"--out",str(output.resolve())]
     if preview_frame is not None:
         command.extend(["--preview-frame",str(preview_frame)])
     if preview_frames is not None:
         command.extend(["--preview-frames",",".join(map(str,preview_frames))])
     subprocess.run(command,check=True)
-    manifest = validate_scene_manifest(output / "scene_manifest.json")
+    manifest = validate_scene_manifest(output / "scene_manifest.json", story=story)
     print("Scene audit passed:", manifest["structural_counts"])
     if preview_frames is not None:
         _contact_sheet(output, preview_frames)
@@ -75,7 +79,9 @@ def parser():
     d.add_argument("--voice")
     plan = sub.add_parser("plan",help="generate a validated storyboard")
     plan.add_argument("--topic",default="How a water tower supplies an entire neighbourhood")
-    plan.add_argument("--engine",choices=["template","ollama"],default="template")
+    plan.add_argument("--engine",choices=["template","ollama","library"],default="template")
+    plan.add_argument("--duration",type=int,default=90,
+                      help="for library: 60, 75, 90, 120 or 180 seconds")
     plan.add_argument("--model",default="qwen3:8b")
     plan.add_argument("--ollama-url",default="http://127.0.0.1:11434")
     plan.add_argument("--output",type=Path,default=Path("output/storyboard.json"))
@@ -137,8 +143,12 @@ def main(argv=None):
             options += ["--voice",args.voice]
         return pc_main(options)
     if args.command == "plan":
-        story = (template_storyboard(args.topic) if args.engine == "template"
-                 else ollama_storyboard(args.topic,model=args.model,url=args.ollama_url))
+        if args.engine == "library":
+            from .topic_packs import build_story
+            story = build_story(args.topic, args.duration)
+        else:
+            story = (template_storyboard(args.topic) if args.engine == "template"
+                     else ollama_storyboard(args.topic,model=args.model,url=args.ollama_url))
         args.output.parent.mkdir(parents=True,exist_ok=True)
         args.output.write_text(json.dumps(story,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
         print(f"Storyboard saved: {args.output} ({word_count(story)} words)")
@@ -148,7 +158,7 @@ def main(argv=None):
         return
     story = load_storyboard(args.storyboard)
     if args.command == "validate":
-        print(f"Valid: {story['title']} | {len(story['beats'])} beats | 40s | {word_count(story)} words")
+        print(f"Valid: {story['title']} | {len(story['beats'])} beats | {story['duration']}s | {word_count(story)} words")
         return
     if args.command == "captions":
         print(write_captions(story,args.out))
@@ -165,7 +175,7 @@ def main(argv=None):
         return
     if args.command == "audio":
         if args.tts == "none":
-            sound = create_silent_audio(args.out/"audio",ffmpeg=args.ffmpeg)
+            sound = create_silent_audio(args.out/"audio",duration=story["duration"],ffmpeg=args.ffmpeg)
         else:
             sound = create_audio(story,args.out/"audio",provider=args.tts,
                                  voice=args.voice or ("Ryan" if args.tts=="qwen" else "af_heart"),
@@ -181,7 +191,9 @@ def main(argv=None):
         if args.dry_run:
             print(json.dumps({
                 "status":"validated_only", "title":story["title"],
-                "frames":960, "draft_resolution":"720x1280", "duration":40,
+                "frames":story["duration"]*story["fps"],
+                "draft_resolution":"720x1280", "duration":story["duration"],
+                "scene_template":story.get("scene_template","legacy_water_tower"),
                 "requires":["Blender","FFmpeg","ffprobe","isolated Qwen3-TTS or Kokoro runtime (unless --tts none)"],
                 "stages":["render","audio","captions","compose","check"],
                 "note":"no video generated in dry-run mode; no YouTube publishing",
@@ -193,7 +205,7 @@ def main(argv=None):
             return
         # TTS preflight and synthesis happen BEFORE costly 960-frame render.
         if args.tts == "none":
-            create_silent_audio(args.out/"audio",ffmpeg=args.ffmpeg)
+            create_silent_audio(args.out/"audio",duration=story["duration"],ffmpeg=args.ffmpeg)
             print("Explicit silent mode: preview only, no human narration.",flush=True)
         else:
             create_audio(story,args.out/"audio",provider=args.tts,
@@ -203,7 +215,8 @@ def main(argv=None):
         print("Audio ready. Starting 960-frame Blender render.",flush=True)
         render(args.storyboard,args.out,blender=args.blender)
         target=compose(story,args.out,ffmpeg=args.ffmpeg)
-        report=inspect_video(target,ffprobe=args.ffprobe)
+        report=inspect_video(target,ffprobe=args.ffprobe,
+                             expected_duration=story["duration"])
         report["sha256"]=hashlib.sha256(target.read_bytes()).hexdigest()
         report["narration_provider"]=args.tts
         (args.out/"quality.json").write_text(json.dumps(report,indent=2)+"\n",encoding="utf-8")
