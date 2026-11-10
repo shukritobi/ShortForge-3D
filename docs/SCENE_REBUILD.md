@@ -31,14 +31,14 @@ The PC agent runs Blender once and exports:
 - output/water_tower/preview_0480.png (20.0s, connected tower supports growing)
 - output/water_tower/preview_0576.png (24.0s, tank shell and water)
 - output/water_tower/preview_0720.png (30.0s, underground pipe cutaway)
-- output/water_tower/preview_0888.png (37.0s, distribution/payoff)
+- output/water_tower/preview_0936.png (39.0s, finished water-tower reveal)
 - output/water_tower/contact_sheet.png (3-column review montage, FFmpeg)
 - output/water_tower/preview.png (latest frame for legacy launcher)
 - output/water_tower/scene_manifest.json (component count and geometry audit)
 
 You can instead call:
 
-    shortforge render examples/water_tower_40s.json --out output/water_tower --preview-frames 120,240,480,576,720,888
+    shortforge render examples/water_tower_40s.json --out output/water_tower --preview-frames 120,240,480,576,720,936
 
 The PC agent logs stderr/stdout and diagnostic JSON under output/diagnostics.
 YouTube upload remains out of scope. Piper is not needed for visual QA.

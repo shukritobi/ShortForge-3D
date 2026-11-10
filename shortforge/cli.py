@@ -12,7 +12,7 @@ import shutil
 from .contract import load_storyboard, narration, word_count
 from .director import template_storyboard, ollama_storyboard
 from .captions import write_captions
-from .audio import create_audio, require_program
+from .audio import create_audio, create_silent_audio, require_program
 from .pc_agent import find_blender
 from .video import compose, inspect_video
 from .scene_validation import validate_scene_manifest
@@ -91,11 +91,14 @@ def parser():
     preview_opts = r.add_mutually_exclusive_group()
     preview_opts.add_argument("--preview-frame",type=int)
     preview_opts.add_argument("--preview-frames",type=str,
-                              help="2-6 comma-separated frame numbers, e.g. 120,240,480,576,720,888")
+                              help="2-6 comma-separated frame numbers, e.g. 120,240,480,576,720,936")
     a = sub.add_parser("audio")
     a.add_argument("storyboard",type=Path)
     a.add_argument("--out",type=Path,default=Path("output/water_tower"))
-    a.add_argument("--voice",required=True,help="local Piper .onnx voice file")
+    a.add_argument("--tts",choices=["qwen","kokoro","none"],default="qwen")
+    a.add_argument("--voice",default=None,help="Qwen speaker (Ryan/Aiden), or Kokoro voice (am_adam/af_heart)")
+    a.add_argument("--model-id",help="optional local model path or Hugging Face model ID")
+    a.add_argument("--tts-python",help="Python in isolated .venv-tts")
     a.add_argument("--piper",default="piper")
     a.add_argument("--ffmpeg",default="ffmpeg")
     a.add_argument("--ffprobe",default="ffprobe")
@@ -109,7 +112,11 @@ def parser():
     run = sub.add_parser("run",help="render, speak, caption, compose and QA one short")
     run.add_argument("storyboard",type=Path,nargs="?",default=DEFAULT_STORY)
     run.add_argument("--out",type=Path,default=Path("output/water_tower"))
-    run.add_argument("--voice",help="local Piper English .onnx voice file")
+    run.add_argument("--tts",choices=["qwen","kokoro","none"],default="qwen",
+                     help="Qwen3-TTS (default), Kokoro, or explicit silent technical draft")
+    run.add_argument("--voice",default=None,help="Qwen speaker or Kokoro voice")
+    run.add_argument("--model-id",help="optional model path or Hugging Face ID")
+    run.add_argument("--tts-python",help="Python in dedicated .venv-tts environment")
     run.add_argument("--blender",default="blender")
     run.add_argument("--piper",default="piper")
     run.add_argument("--ffmpeg",default="ffmpeg")
@@ -157,8 +164,14 @@ def main(argv=None):
                preview_frame=args.preview_frame,preview_frames=review)
         return
     if args.command == "audio":
-        print(create_audio(story,args.out/"audio",model=args.voice,
-                           piper=args.piper,ffmpeg=args.ffmpeg,ffprobe=args.ffprobe))
+        if args.tts == "none":
+            sound = create_silent_audio(args.out/"audio",ffmpeg=args.ffmpeg)
+        else:
+            sound = create_audio(story,args.out/"audio",provider=args.tts,
+                                 voice=args.voice or ("Ryan" if args.tts=="qwen" else "af_heart"),
+                                 model_id=args.model_id,python=args.tts_python,
+                                 ffmpeg=args.ffmpeg,ffprobe=args.ffprobe)
+        print(sound)
         return
     if args.command == "compose":
         print(compose(story,args.out,ffmpeg=args.ffmpeg))
@@ -169,22 +182,30 @@ def main(argv=None):
             print(json.dumps({
                 "status":"validated_only", "title":story["title"],
                 "frames":960, "draft_resolution":"720x1280", "duration":40,
-                "requires":["Blender","Piper English model","FFmpeg","ffprobe"],
+                "requires":["Blender","FFmpeg","ffprobe","isolated Qwen3-TTS or Kokoro runtime (unless --tts none)"],
                 "stages":["render","audio","captions","compose","check"],
                 "note":"no video generated in dry-run mode; no YouTube publishing",
             },indent=2))
             return
-        render(args.storyboard,args.out,blender=args.blender,preview_frame=args.preview_frame)
         if args.preview_frame is not None:
+            render(args.storyboard,args.out,blender=args.blender,preview_frame=args.preview_frame)
             print(f"Preview still rendered: {args.out/'preview.png'}")
             return
-        if not args.voice:
-            raise SystemExit("full run requires --voice /path/to/english.onnx")
-        create_audio(story,args.out/"audio",model=args.voice,
-                     piper=args.piper,ffmpeg=args.ffmpeg,ffprobe=args.ffprobe)
+        # TTS preflight and synthesis happen BEFORE costly 960-frame render.
+        if args.tts == "none":
+            create_silent_audio(args.out/"audio",ffmpeg=args.ffmpeg)
+            print("Explicit silent mode: preview only, no human narration.",flush=True)
+        else:
+            create_audio(story,args.out/"audio",provider=args.tts,
+                         voice=args.voice or ("Ryan" if args.tts=="qwen" else "af_heart"),
+                         model_id=args.model_id,python=args.tts_python,
+                         ffmpeg=args.ffmpeg,ffprobe=args.ffprobe)
+        print("Audio ready. Starting 960-frame Blender render.",flush=True)
+        render(args.storyboard,args.out,blender=args.blender)
         target=compose(story,args.out,ffmpeg=args.ffmpeg)
         report=inspect_video(target,ffprobe=args.ffprobe)
         report["sha256"]=hashlib.sha256(target.read_bytes()).hexdigest()
+        report["narration_provider"]=args.tts
         (args.out/"quality.json").write_text(json.dumps(report,indent=2)+"\n",encoding="utf-8")
         print(f"Draft ready for manual review: {target}")
         print(json.dumps(report,indent=2))

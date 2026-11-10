@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
+from .audio import voice_python
 import platform
 import shutil
 import subprocess
@@ -96,7 +97,7 @@ def doctor(blender_override: str | None = None, voice: str | None = None) -> dic
         "tools": {},
         "disk_free_gb": round(shutil.disk_usage(ROOT).free / (1024**3), 1),
     }
-    for name in ("blender", "ffmpeg", "ffprobe", "piper", "git", "nvidia-smi"):
+    for name in ("blender", "ffmpeg", "ffprobe", "git", "nvidia-smi"):
         path = executable if name == "blender" else shutil.which(name)
         detail = {"found": bool(path), "path": path}
         if path:
@@ -118,18 +119,30 @@ def doctor(blender_override: str | None = None, voice: str | None = None) -> dic
                 detail["version"] = probe(
                     [path, "-version" if name in ("ffmpeg", "ffprobe") else "--version"], 15)
         result["tools"][name] = detail
-    model = Path(voice).expanduser() if voice else None
-    result["voice_model"] = {
-        "provided": bool(model),
-        "onnx_exists": bool(model and model.is_file()),
-        "config_exists": bool(model and Path(str(model) + ".json").is_file())
-    }
+    tts_exe = ROOT / ".venv-tts" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    tts = {"python": str(tts_exe), "python_found": tts_exe.is_file(),
+           "qwen_installed": False, "kokoro_installed": False}
+    if tts_exe.is_file():
+        outcome = probe([
+            str(tts_exe), "-c",
+            "import importlib.util,json;"
+            "print(json.dumps({'qwen':importlib.util.find_spec('qwen_tts') is not None,"
+            "'kokoro':importlib.util.find_spec('kokoro') is not None}))"
+        ], 20)
+        if outcome.get("ok"):
+            try:
+                flags = json.loads(outcome["stdout_tail"].strip().splitlines()[-1])
+                tts["qwen_installed"] = bool(flags["qwen"])
+                tts["kokoro_installed"] = bool(flags["kokoro"])
+            except (ValueError, KeyError, IndexError):
+                pass
+    result["tts"] = tts
     tools = result["tools"]
     result["ready_preview"] = bool(tools["blender"].get("headless_ok"))
     result["ready_full"] = bool(
         result["ready_preview"] and
-        all(tools[n]["found"] for n in ("piper", "ffmpeg", "ffprobe")) and
-        result["voice_model"]["onnx_exists"] and result["voice_model"]["config_exists"]
+        all(tools[n]["found"] for n in ("ffmpeg", "ffprobe")) and
+        (tts["qwen_installed"] or tts["kokoro_installed"])
     )
     hints = []
     if not executable:
@@ -138,10 +151,12 @@ def doctor(blender_override: str | None = None, voice: str | None = None) -> dic
         hints.append("Blender found but failed headless probe. Inspect tools.blender.headless.")
     if not tools["ffmpeg"]["found"] or not tools["ffprobe"]["found"]:
         hints.append("FFmpeg/ffprobe not found. Add their bin directory to PATH before full rendering.")
-    if not tools["piper"]["found"]:
-        hints.append("Piper CLI not found. It is only required for the full narrated video.")
-    if not model:
-        hints.append("Full rendering needs --voice path/to/english.onnx and its .onnx.json config.")
+    if not tts["qwen_installed"] and not tts["kokoro_installed"]:
+        hints.append("Quality narration not installed. See docs/TTS_SETUP.md for Qwen3-TTS or Kokoro.")
+    elif tts["qwen_installed"]:
+        hints.append("Qwen3-TTS is installed; first model download will require internet access.")
+    elif tts["kokoro_installed"]:
+        hints.append("Kokoro is installed. Use full --tts kokoro --voice af_heart.")
     result["hints"] = hints
     return result
 
@@ -159,12 +174,14 @@ def scoped_path(base: Path, path: str | Path) -> Path:
 def validate_job(job: dict) -> dict:
     if not isinstance(job, dict) or job.get("version") != 1 or job.get("task") not in ALLOWED:
         raise ValueError("Expected a version 1 doctor/preview/review/tests/full job")
-    if set(job) - {"version", "task", "blender", "voice", "storyboard", "out", "preview_frame"}:
+    if set(job) - {"version", "task", "blender", "voice", "storyboard", "out", "preview_frame", "tts"}:
         raise ValueError("Unsupported job fields; shell commands are forbidden")
     if "storyboard" in job:
         scoped_path(ROOT / "examples", job["storyboard"])
     if "out" in job:
         scoped_path(OUTPUT, job["out"])
+    if "tts" in job and job["tts"] not in ("qwen", "kokoro", "none"):
+        raise ValueError("TTS must be qwen, kokoro or none")
     if "preview_frame" in job and (
         type(job["preview_frame"]) is not int or not 1 <= job["preview_frame"] <= 960
     ):
@@ -188,9 +205,10 @@ def tail(path: Path) -> list[str]:
 
 def run_task(task: str, *, blender: str | None = None, voice: str | None = None,
              storyboard: str = "examples/water_tower_40s.json",
-             out: str = "output/water_tower", preview_frame: int = 480) -> tuple[dict, Path]:
+             out: str = "output/water_tower", preview_frame: int = 480,
+             tts: str = "qwen") -> tuple[dict, Path]:
     validate_job({"version": 1, "task": task, "storyboard": storyboard,
-                  "out": out, "preview_frame": preview_frame})
+                  "out": out, "preview_frame": preview_frame, "tts": tts})
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     logdir = OUTPUT / "diagnostics" / (stamp + "-" + task + "-" + uuid.uuid4().hex[:6])
     logdir.mkdir(parents=True, exist_ok=False)
@@ -223,17 +241,26 @@ def run_task(task: str, *, blender: str | None = None, voice: str | None = None,
                        str(scoped_path(ROOT / "examples", storyboard)),
                        "--out", str(target.parent),
                        "--blender", information["tools"]["blender"]["path"],
-                       "--preview-frames", "120,240,480,576,720,888"]
+                       "--preview-frames", "120,240,480,576,720,936"]
     elif task == "full":
-        if not information["ready_full"]:
-            error = "Missing full-render prerequisites. Open doctor.json."
+        tools = information["tools"]
+        base_ready = (information["ready_preview"] and
+                      tools["ffmpeg"]["found"] and tools["ffprobe"]["found"])
+        selected_ready = (
+            tts == "none" or
+            information["tts"].get("qwen_installed" if tts == "qwen" else "kokoro_installed", False)
+        )
+        if not base_ready or not selected_ready:
+            error = "Full video prerequisites missing. Read doctor.json. Use --tts none only for a silent technical draft."
         else:
             target = scoped_path(OUTPUT, out) / "draft.mp4"
             command = [sys.executable, "-m", "shortforge.cli", "run",
                        str(scoped_path(ROOT / "examples", storyboard)),
                        "--out", str(target.parent),
                        "--blender", information["tools"]["blender"]["path"],
-                       "--voice", str(Path(voice).expanduser().resolve())]
+                       "--tts", tts]
+            if voice:
+                command.extend(["--voice", voice])
     if command:
         event(events, "process_start", argv=command)
         print("Running task:", task, "\nWriting logs to:", logdir, flush=True)
@@ -289,6 +316,9 @@ def main(argv: list[str] | None = None) -> int:
             cmd.add_argument("--out", default="output/water_tower")
         if name == "preview":
             cmd.add_argument("--frame", type=int, default=480)
+        if name == "full":
+            cmd.add_argument("--tts", choices=["qwen","kokoro","none"], default="qwen")
+            cmd.add_argument("--speaker", help="Ryan/Aiden for Qwen; af_heart for Kokoro")
     job_cmd = sub.add_parser("job")
     job_cmd.add_argument("manifest", type=Path)
     args = parser.parse_args(argv)
@@ -298,13 +328,16 @@ def main(argv: list[str] | None = None) -> int:
         options = {"blender": data.get("blender"), "voice": data.get("voice"),
                    "storyboard": data.get("storyboard", "examples/water_tower_40s.json"),
                    "out": data.get("out", "output/water_tower"),
-                   "preview_frame": data.get("preview_frame", 480)}
+                   "preview_frame": data.get("preview_frame", 480),
+                   "tts": data.get("tts", "qwen")}
     else:
         task = args.task
-        options = {"blender": args.blender, "voice": args.voice,
+        selected_voice = getattr(args, "speaker", None) or args.voice
+        options = {"blender": args.blender, "voice": selected_voice,
                    "storyboard": getattr(args, "storyboard", "examples/water_tower_40s.json"),
                    "out": getattr(args, "out", "output/water_tower"),
-                   "preview_frame": getattr(args, "frame", 480)}
+                   "preview_frame": getattr(args, "frame", 480),
+                   "tts": getattr(args, "tts", "qwen")}
     try:
         summary, folder = run_task(task, **options)
     except (ValueError, OSError, TypeError) as exc:

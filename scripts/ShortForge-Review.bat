@@ -43,7 +43,7 @@ popd
 echo [3/3] Copying review outputs and diagnostics...
 if exist "%DRIVE%outbox\latest" (
   if "!RESULT!"=="0" (
-    for %%F in (contact_sheet.png preview.png scene_manifest.json preview_0120.png preview_0240.png preview_0480.png preview_0576.png preview_0720.png preview_0888.png) do (
+    for %%F in (contact_sheet.png preview.png scene_manifest.json preview_0120.png preview_0240.png preview_0480.png preview_0576.png preview_0720.png preview_0936.png) do (
       if exist "%REPO%\output\water_tower\%%F" copy /Y "%REPO%\output\water_tower\%%F" "%DRIVE%outbox\latest\%%F" >nul
     )
   )

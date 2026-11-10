@@ -28,10 +28,10 @@ CAMERAS = {
     "houses": ((-8.0, -12.5, 6.5), (-3.2, -0.2, 1.1), 7.8),
     "wide": ((12.0, -20.0, 11.5), (-0.1, 0.2, 2.1), 16.8),
     "pump": ((-11.0, -9.0, 7.5), (-6.2, 2.65, 1.1), 8.0),
-    "tower": ((8.5, -12.0, 9.8), (3.05, 2.55, 4.25), 9.5),
-    "cutaway": ((8.2, -12.5, 5.4), (0.8, -2.15, 0.3), 10.2),
-    "distribution": ((6.0, -12.0, 6.5), (0.0, -2.1, 0.35), 10.8),
-    "reveal": ((11.0, -17.5, 10.3), (0.35, 0.35, 2.65), 15.3),
+    "tower": ((8.5, -12.0, 9.8), (3.05, 2.55, 4.25), 11.0),
+    "cutaway": ((6.5, -14.0, 9.8), (0.0, -2.15, 0.0), 18.5),
+    "distribution": ((5.5, -17.5, 12.5), (0.0, -1.5, 0.3), 24.5),
+    "reveal": ((5.0, -21.0, 13.0), (0.5, 0.5, 3.5), 27.0),
 }
 HOMES = [
     (-5.0, -0.25), (-2.1, -0.25), (0.8, -0.25), (5.4, -0.25),
@@ -106,8 +106,29 @@ def beam(name, point_a, point_b, radius, material, vertices=12):
     return obj
 
 
+def reveal_at(obj, when):
+    """Keyframe render visibility so future construction is actually absent.
+
+    A newly created Blender object is visible at frame 1 unless hide_render
+    is explicitly animated. Scaling to 0.001 is not sufficient for a render.
+    """
+    start = max(1, f(when))
+    obj.hide_render = True
+    obj.hide_viewport = True
+    obj.keyframe_insert(data_path="hide_render", frame=1)
+    obj.keyframe_insert(data_path="hide_viewport", frame=1)
+    if start > 1:
+        obj.keyframe_insert(data_path="hide_render", frame=start - 1)
+        obj.keyframe_insert(data_path="hide_viewport", frame=start - 1)
+    obj.hide_render = False
+    obj.hide_viewport = False
+    obj.keyframe_insert(data_path="hide_render", frame=start)
+    obj.keyframe_insert(data_path="hide_viewport", frame=start)
+
+
 def show(obj, t0, t1, *, from_offset=(0, 0, -0.7)):
     """Slide a complete solid into position; never scale it around its centre."""
+    reveal_at(obj, t0)
     final = obj.location.copy()
     shift = Vector(from_offset)
     obj.location = final + shift
@@ -123,6 +144,7 @@ def show(obj, t0, t1, *, from_offset=(0, 0, -0.7)):
 
 def grow_beam(obj, a, b, t0, t1):
     """Grow beam from the physically connected first endpoint."""
+    reveal_at(obj, t0)
     a, b = Vector(a), Vector(b)
     midpoint = (a+b)*0.5
     obj.location = a.copy()
@@ -348,6 +370,8 @@ def tank_water(fill_start,fill_end,recharge_start):
     water=cyl("visible_tank_water",(cx,cy,TANK_BOTTOM+.06),1.44,1.8,blue,48)
     surface=cyl("water_surface_disc",(cx,cy,TANK_BOTTOM+.10),1.45,.055,
                 mat("water_surface",(0.23,.77,.98),.12),48)
+    reveal_at(water, fill_start)
+    reveal_at(surface, fill_start)
     for when,height in (
         (0,.012),(fill_start,.012),(fill_end,1.68),
         (32.0,1.58),(recharge_start,1.32),(DURATION,1.60),
@@ -411,6 +435,7 @@ def particles(start):
         for duplicate in (0,1):
             dot=ball("water_pulse_%d_%d"%(index,duplicate),path[0],.14,mat_water)
             arrival=start+1.0+index*.25+duplicate*2.6
+            reveal_at(dot, arrival)
             dot.scale=(.001,.001,.001)
             dot.keyframe_insert("scale",frame=f(0))
             dot.keyframe_insert("scale",frame=f(arrival))
@@ -545,7 +570,8 @@ def report(output):
         "tank_to_support_connection":{"top_support_z":5.62,"tank_bottom_z":TANK_BOTTOM,"max_gap_m":.05},
         "scene_objects":len(bpy.data.objects),
         "cameras":{name:{"target":v[1],"ortho_scale":v[2]} for name,v in CAMERAS.items()},
-        "preview_frames_recommended":[120,240,480,576,720,888],
+        "preview_frames_recommended":[120,240,480,576,720,936],
+        "visibility_policy":"keyframed_hide_render_hide_viewport",
     }
     path=output/"scene_manifest.json"
     path.write_text(json.dumps(out,indent=2)+"\n",encoding="utf-8")
@@ -603,7 +629,7 @@ def args():
     mode=parser.add_mutually_exclusive_group()
     mode.add_argument("--preview-frame",type=int)
     mode.add_argument("--preview-frames",type=str,
-                      help="comma-separated keyframes e.g. 120,240,480,576,720,888")
+                      help="comma-separated keyframes e.g. 120,240,480,576,720,936")
     return parser.parse_args(items)
 
 

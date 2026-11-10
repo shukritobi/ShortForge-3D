@@ -2,11 +2,11 @@
 
 Local-first, original, procedural **educational YouTube Shorts**. This implementation
 builds a continuous stylized 3D water-tower neighbourhood in Blender, narrates
-eight problem/solution beats with **offline English Piper TTS**, creates readable
+eight problem/solution beats with **offline Qwen3-TTS or Kokoro**, creates readable
 captions, and produces a **40-second, 720×1280, 24 FPS draft MP4** with FFmpeg.
 
-**Status:** Working source pipeline and testable contracts. A full Blender render
-has not been benchmarked on the author's machine. The pipeline is deliberately
+**Status:** Windows Blender 4.5.2 has successfully rendered six local preview
+frames; the new visibility/camera fixes and full narrated 960-frame run still need an on-PC visual review. The pipeline is deliberately
 local-only: **NO YouTube upload or publishing code**, no paid API, no cloud rendering.
 
 ## First video
@@ -23,8 +23,8 @@ registered presets. AI-produced scripts can only select registered scene actions
 - Python 3.10+ (tested with Python 3.11/3.13 for pure-Python stages)
 - Blender 4.5 LTS with its executable on PATH (or supply an absolute path)
 - FFmpeg and ffprobe on PATH
-- Piper TTS executable plus **one locally downloaded English ONNX voice model**
-  and its adjacent .onnx.json configuration. See https://github.com/OHF-Voice/piper1-gpl
+- Dedicated `.venv-tts` with **Qwen3-TTS 0.6B CustomVoice** (recommended),
+  or Kokoro-82M as a lightweight alternative. See [setup](docs/TTS_SETUP.md)
 - Optional: Ollama running locally for AI storyboard generation
 - Optional: Node 20+ for Remotion compositor
 
@@ -50,8 +50,9 @@ opens a port, uploads your logs, or executes arbitrary commands.
 
 ### Updated visual review: six Blender keyframes
 
-The water tower has been rebuilt with connected legs/braces, a cutaway tank,
-a visible underground trench, pitched-roof houses and improved portrait framing.
+The water tower has been rebuilt with connected legs/braces, explicit
+keyframed pre-appearance hiding, a cutaway tank, exposed underground trench,
+pitched-roof houses and improved final-reveal camera framing.
 Run this **before** a full render (no Piper required):
 
 ```powershell
@@ -61,6 +62,30 @@ python scripts/pc_agent.py review
 This creates `output/water_tower/contact_sheet.png`, six individual
 `preview_XXXX.png` stills, `preview.png` for the existing Drive launcher, and
 `scene_manifest.json` for structural checks. See [visual QA guide](docs/SCENE_REBUILD.md).
+
+### Produce the FIRST full video on your Windows PC
+
+The complete 40-second video can be generated **now**, first as a technical
+silent draft using Blender + FFmpeg already installed:
+
+```powershell
+python scripts/pc_agent.py full --tts none
+```
+
+For **high-quality English narration**, install Qwen3-TTS in `.venv-tts`
+(see [TTS setup](docs/TTS_SETUP.md)) and run:
+
+```powershell
+python scripts/pc_agent.py full --tts qwen --speaker Ryan
+```
+
+The script generates narration before rendering 960 frames. No Windows
+built-in text-to-speech is used. A second launcher, `scripts/ShortForge-Video.bat`,
+offers Qwen, Kokoro and explicit silent mode and copies the resulting MP4
+and quality JSON to your Google Drive review folder. **No YouTube publishing.**
+
+See [master plan](docs/MASTER_PLAN.md), [library catalog](assets/catalog.json)
+and [render playbook](docs/RENDER_PLAYBOOK.md).
 
 ### Quick start
 
@@ -84,15 +109,14 @@ Preview a single frame before committing to a 960-frame render:
 shortforge render output/storyboard.json --out output/water_tower --preview-frame 480
 ```
 
-Render and assemble a full **40-second narrated draft**, using a Piper
-model already downloaded on your PC:
+Render and assemble a full **40-second narrated draft**, once Qwen3-TTS is installed:
 
 ```powershell
-shortforge run output/storyboard.json --out output/water_tower --voice "C:\Voices\en_US-lessac-medium.onnx"
+shortforge run output/storyboard.json --out output/water_tower --tts qwen --voice Ryan
 ```
 
-You can override Blender, Piper, ffmpeg and ffprobe binary locations using
-CLI flags. Full runs may take considerable time depending on GPU settings.
+You can override Blender, ffmpeg, ffprobe, TTS voice and the isolated
+TTS Python path using CLI flags. Full runs may take considerable time depending on GPU settings.
 
 ### Outputs
 
@@ -100,8 +124,9 @@ CLI flags. Full runs may take considerable time depending on GPU settings.
 output/water_tower/
   preview.png                   # optional single-frame check
   frames/frame_000001.png ...   # 960 Blender PNG frames
-  audio/narration.wav           # Piper voice, precisely 40 seconds
+  audio/narration.wav           # Qwen/Kokoro voice, precisely 40 seconds
   audio/beats/*.wav             # individually duration-fitted beat narration
+  audio/voice_manifest.json    # TTS provider/model/voice settings
   captions/captions.json       # beat-constrained caption cues for Remotion
   captions/captions.ass        # burn-in captions (FFmpeg)
   draft.mp4                     # 720x1280, 24fps, AAC + H.264
@@ -148,8 +173,8 @@ for the optional TypeScript/Remotion compositor consuming the same captions JSON
 ### Production limitations
 
 This is the *first* production slice, not a generalized AI-to-any-3D-video engine.
-Blender and Piper must be installed on the Windows workstation to render a full
-video. A persistent dashboard, job queue, exact word alignment, fact-checking
+Blender + FFmpeg are needed for a technical silent MP4; a dedicated local
+Qwen3-TTS or Kokoro environment enables the actual narrated Short. A persistent dashboard, job queue, exact word alignment, fact-checking
 agent, batch rendering and YouTube approval/upload workflow are later milestones.
 
 **Publishing is deliberately disabled in Phase 1.**
