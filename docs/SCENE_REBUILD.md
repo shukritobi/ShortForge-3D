@@ -60,3 +60,11 @@ needs review on Windows.
 - Inspect screenshot montage and adjust exact shot framing/material contrast.
 - Fix any actual Blender 4.5 rendering failures shown in PC agent logs.
 - Once visual QA passes, install Piper English and render 960 frames.
+
+## Google Drive one-click launcher
+
+Copy `scripts/ShortForge-Review.bat` to `G:\My Drive\ChatGPT ShortForge 3D` (a
+copy is provided there). Double-click it to fast-forward the feature branch,
+render the six review stills and sync `contact_sheet.png`, `scene_manifest.json`,
+`preview.png`, all six numbered preview stills, and diagnostic logs to
+`outbox/latest`. It refuses to update the wrong branch. No video publishing.
