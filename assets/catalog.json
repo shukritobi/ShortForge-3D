@@ -2,13 +2,239 @@
   "catalog_version": 1,
   "design_system": "ShortForge-Stylized-001",
   "entries": [
-    {"id":"environment.neighbourhood","version":"0.1.0","kind":"environment","source":"scripts/blender_water_tower.py","license":"original","status":"prototype","tags":["houses","grass","road","trees"]},
-    {"id":"model.water_tower","version":"0.1.0","kind":"model","source":"scripts/blender_water_tower.py","license":"original","status":"prototype","tags":["storage","water","infrastructure"]},
-    {"id":"model.pump_station","version":"0.1.0","kind":"model","source":"scripts/blender_water_tower.py","license":"original","status":"prototype","tags":["pump","water"]},
-    {"id":"model.underground_main","version":"0.1.0","kind":"model","source":"scripts/blender_water_tower.py","license":"original","status":"prototype","tags":["pipes","cutaway","distribution"]},
-    {"id":"action.assemble_supports","version":"0.1.0","kind":"action","source":"scripts/blender_water_tower.py","license":"original","status":"prototype","tags":["construction","animation"]},
-    {"id":"action.fill_tank","version":"0.1.0","kind":"action","source":"scripts/blender_water_tower.py","license":"original","status":"prototype","tags":["water","animation"]},
-    {"id":"action.pipe_flow","version":"0.1.0","kind":"action","source":"scripts/blender_water_tower.py","license":"original","status":"prototype","tags":["water","animation"]},
-    {"id":"camera.portrait_reveal","version":"0.1.0","kind":"camera","source":"scripts/blender_water_tower.py","license":"original","status":"prototype","tags":["portrait","camera"]}
+    {
+      "id": "environment.neighbourhood",
+      "version": "0.1.0",
+      "kind": "environment",
+      "source": "scripts/blender_water_tower.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "houses",
+        "grass",
+        "road",
+        "trees"
+      ]
+    },
+    {
+      "id": "model.water_tower",
+      "version": "0.1.0",
+      "kind": "model",
+      "source": "scripts/blender_water_tower.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "storage",
+        "water",
+        "infrastructure"
+      ]
+    },
+    {
+      "id": "model.pump_station",
+      "version": "0.1.0",
+      "kind": "model",
+      "source": "scripts/blender_water_tower.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "pump",
+        "water"
+      ]
+    },
+    {
+      "id": "model.underground_main",
+      "version": "0.1.0",
+      "kind": "model",
+      "source": "scripts/blender_water_tower.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "pipes",
+        "cutaway",
+        "distribution"
+      ]
+    },
+    {
+      "id": "action.assemble_supports",
+      "version": "0.1.0",
+      "kind": "action",
+      "source": "scripts/blender_water_tower.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "construction",
+        "animation"
+      ]
+    },
+    {
+      "id": "action.fill_tank",
+      "version": "0.1.0",
+      "kind": "action",
+      "source": "scripts/blender_water_tower.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "water",
+        "animation"
+      ]
+    },
+    {
+      "id": "action.pipe_flow",
+      "version": "0.1.0",
+      "kind": "action",
+      "source": "scripts/blender_water_tower.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "water",
+        "animation"
+      ]
+    },
+    {
+      "id": "camera.portrait_reveal",
+      "version": "0.1.0",
+      "kind": "camera",
+      "source": "scripts/blender_water_tower.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "portrait",
+        "camera"
+      ]
+    },
+    {
+      "id": "model.house_basic",
+      "version": "0.2.0",
+      "kind": "model",
+      "source": "scripts/blender_assets_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "shared",
+        "housing",
+        "parametric"
+      ]
+    },
+    {
+      "id": "model.water_tower_v2",
+      "version": "0.2.0",
+      "kind": "model",
+      "source": "scripts/blender_assets_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "water",
+        "tower"
+      ]
+    },
+    {
+      "id": "model.pump_v2",
+      "version": "0.2.0",
+      "kind": "model",
+      "source": "scripts/blender_assets_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "water",
+        "pump"
+      ]
+    },
+    {
+      "id": "model.solar_array",
+      "version": "0.2.0",
+      "kind": "model",
+      "source": "scripts/blender_assets_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "solar",
+        "electricity"
+      ]
+    },
+    {
+      "id": "model.storage_battery",
+      "version": "0.2.0",
+      "kind": "model",
+      "source": "scripts/blender_assets_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "battery",
+        "energy"
+      ]
+    },
+    {
+      "id": "model.underground_main_v2",
+      "version": "0.2.0",
+      "kind": "model",
+      "source": "scripts/blender_assets_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "pipe",
+        "cutaway"
+      ]
+    },
+    {
+      "id": "action.assembly_v2",
+      "version": "0.2.0",
+      "kind": "action",
+      "source": "scripts/blender_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "assembly",
+        "animation"
+      ]
+    },
+    {
+      "id": "action.flow_v2",
+      "version": "0.2.0",
+      "kind": "action",
+      "source": "scripts/blender_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "water",
+        "electricity"
+      ]
+    },
+    {
+      "id": "action.excavation_cutaway",
+      "version": "0.2.0",
+      "kind": "action",
+      "source": "scripts/blender_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "ground",
+        "cutaway"
+      ]
+    },
+    {
+      "id": "camera.portrait_follow_v2",
+      "version": "0.2.0",
+      "kind": "camera",
+      "source": "scripts/blender_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "portrait",
+        "camera"
+      ]
+    },
+    {
+      "id": "environment.street_v2",
+      "version": "0.2.0",
+      "kind": "environment",
+      "source": "scripts/blender_assets_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "road",
+        "trees",
+        "landscape"
+      ]
+    }
   ]
 }

@@ -38,11 +38,17 @@ def collect(run:Path,project:Path,story:Path,frame_nums:list[int],*,full:bool):
         copy_if(project/name,run/name)
     for n in frame_nums:
         copy_if(project/f"preview_{n:04d}.png",run/f"preview_{n:04d}.png")
+    # Always preserve audio diagnostics even when a long narration beat fails:
+    # failure evidence must be accessible without repeating expensive GPU TTS.
+    for name in ("voice_manifest.json","timing_report.json","tts_metrics.jsonl"):
+        copy_if(project/"audio"/name,run/name)
+    raw=project/"audio"/"beats"
+    if raw.is_dir():
+        for sample in raw.glob("beat_*_raw.wav"):
+            copy_if(sample,run/"voice_samples"/sample.name)
     if full:
         for name in ("draft.mp4","quality.json"):
             copy_if(project/name,run/name)
-        for name in ("voice_manifest.json","timing_report.json","tts_metrics.jsonl"):
-            copy_if(project/"audio"/name,run/name)
 
 
 def run_phase2(topic:str,duration:int,*,mode:str="preview",

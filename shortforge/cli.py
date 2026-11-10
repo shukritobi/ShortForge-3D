@@ -115,6 +115,8 @@ def parser():
     q = sub.add_parser("check")
     q.add_argument("video",type=Path)
     q.add_argument("--ffprobe",default="ffprobe")
+    q.add_argument("--expected-duration",type=int,default=40,
+                   help="expected seconds for a v2 60-180s video")
     run = sub.add_parser("run",help="render, speak, caption, compose and QA one short")
     run.add_argument("storyboard",type=Path,nargs="?",default=DEFAULT_STORY)
     run.add_argument("--out",type=Path,default=Path("output/water_tower"))
@@ -154,7 +156,8 @@ def main(argv=None):
         print(f"Storyboard saved: {args.output} ({word_count(story)} words)")
         return
     if args.command == "check":
-        print(json.dumps(inspect_video(args.video,ffprobe=args.ffprobe),indent=2))
+        print(json.dumps(inspect_video(args.video,ffprobe=args.ffprobe,
+                                       expected_duration=args.expected_duration),indent=2))
         return
     story = load_storyboard(args.storyboard)
     if args.command == "validate":
