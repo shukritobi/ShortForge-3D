@@ -260,10 +260,8 @@ def run(storyboard, output, preview_frame=None):
     scene.render.image_settings.file_format = "PNG"
     scene.render.image_settings.color_mode = "RGBA"
     scene.render.film_transparent = False
-    try:
-        scene.render.engine = "BLENDER_EEVEE_NEXT"
-    except TypeError:
-        scene.render.engine = "BLENDER_EEVEE"
+    scene.render.engine = ("BLENDER_EEVEE" if bpy.app.version >= (5, 0, 0)
+                           else "BLENDER_EEVEE_NEXT")
 
     output = Path(output)
     frames = output / "frames"

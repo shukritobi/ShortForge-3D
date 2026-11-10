@@ -14,8 +14,9 @@ def compose(story: dict, output: str | Path, *, ffmpeg="ffmpeg") -> Path:
     out = Path(output).resolve()
     frames = out/"frames"
     wav = out/"audio"/"narration.wav"
-    if not (frames/"frame_000001.png").exists():
-        raise FileNotFoundError(f"Blender frames not found: {frames}/frame_000001.png")
+    missing = [i for i in range(1, FPS*SECONDS+1) if not (frames/f"frame_{i:06d}.png").is_file()]
+    if missing:
+        raise FileNotFoundError(f"missing {len(missing)} Blender frames; first missing frame: {missing[0]:06d}")
     if not wav.exists():
         raise FileNotFoundError(f"narration not found: {wav}")
     _,ass = write_captions(story,out/"captions")

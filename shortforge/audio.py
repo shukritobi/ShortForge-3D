@@ -66,7 +66,7 @@ def create_audio(story: dict, output: str | Path, *, model: str, piper="piper", 
         processed.append(adjusted)
     # The concat demuxer requires identical channel/rate/codecs, enforced above.
     listing = beats_dir/"concat.txt"
-    listing.write_text("".join("file '"+f.as_posix().replace("'","'\\''")+"'\n" for f in processed),encoding="utf-8")
+    listing.write_text("".join("file '"+f.resolve().as_posix().replace("'","'\\''")+"'\n" for f in processed),encoding="utf-8")
     narration = out/"narration.wav"
     subprocess.run(
         [ffmpeg,"-hide_banner","-loglevel","error","-y","-f","concat","-safe","0",
