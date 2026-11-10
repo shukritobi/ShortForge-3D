@@ -12,3 +12,5 @@ renders/
 *.mp4
 *.mov
 .DS_Store
+
+.shortforge.local.json

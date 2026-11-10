@@ -31,6 +31,23 @@ registered presets. AI-produced scripts can only select registered scene actions
 Nothing requires commercial voice APIs, paid image generators or cloud services.
 Model downloads, electricity and storage still have real costs.
 
+### First: diagnose Blender on your PC
+
+If your previous preview failed with required local executable not found: blender,
+run the new local-only diagnostic utility first:
+
+    python scripts/pc_agent.py doctor
+    python scripts/pc_agent.py preview
+
+It auto-detects normal Blender installations and writes detailed JSON reports in
+output/diagnostics. To specify a custom Blender installation:
+
+    python scripts/pc_agent.py preview --blender "D:\\Apps\\Blender\\blender.exe"
+
+You can also run shortforge doctor or a reviewed JSON task in jobs/preview.json.
+See docs/PC_AGENT.md for full instructions and privacy notes. The runner never
+opens a port, uploads your logs, or executes arbitrary commands.
+
 ### Quick start
 
 On Windows PowerShell:

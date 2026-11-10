@@ -12,6 +12,7 @@ from .contract import load_storyboard, narration, word_count
 from .director import template_storyboard, ollama_storyboard
 from .captions import write_captions
 from .audio import create_audio, require_program
+from .pc_agent import find_blender
 from .video import compose, inspect_video
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,7 +21,10 @@ DEFAULT_STORY = ROOT/"examples"/"water_tower_40s.json"
 
 
 def render(storyboard: Path, output: Path, *, blender="blender", preview_frame=None):
-    command = [require_program(blender),"-b","--python",str(BLENDER_SCRIPT),
+    executable = find_blender(blender)
+    if not executable:
+        raise RuntimeError("Blender not detected. Run: python scripts/pc_agent.py doctor; or pass --blender with the full blender.exe path")
+    command = [executable,"-b","--python",str(BLENDER_SCRIPT),
                "--","--storyboard",str(storyboard.resolve()),"--out",str(output.resolve())]
     if preview_frame is not None:
         command.extend(["--preview-frame",str(preview_frame)])
@@ -30,6 +34,9 @@ def render(storyboard: Path, output: Path, *, blender="blender", preview_frame=N
 def parser():
     p = argparse.ArgumentParser(prog="shortforge",description="Local-first educational 3D Shorts factory")
     sub = p.add_subparsers(dest="command",required=True)
+    d = sub.add_parser("doctor",help="detect and probe local Blender and video tools")
+    d.add_argument("--blender")
+    d.add_argument("--voice")
     plan = sub.add_parser("plan",help="generate a validated storyboard")
     plan.add_argument("--topic",default="How a water tower supplies an entire neighbourhood")
     plan.add_argument("--engine",choices=["template","ollama"],default="template")
@@ -75,6 +82,14 @@ def parser():
 
 def main(argv=None):
     args = parser().parse_args(argv)
+    if args.command == "doctor":
+        from .pc_agent import main as pc_main
+        options = ["doctor"]
+        if args.blender:
+            options += ["--blender",args.blender]
+        if args.voice:
+            options += ["--voice",args.voice]
+        return pc_main(options)
     if args.command == "plan":
         story = (template_storyboard(args.topic) if args.engine == "template"
                  else ollama_storyboard(args.topic,model=args.model,url=args.ollama_url))

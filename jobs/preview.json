@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "task": "preview",
+  "storyboard": "examples/water_tower_40s.json",
+  "out": "output/water_tower",
+  "preview_frame": 480
+}
