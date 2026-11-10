@@ -38,7 +38,7 @@ def validate_story_v2(story: dict) -> dict:
     if story.get("fps") != 24 or story.get("resolution") != [720, 1280]:
         raise StoryV2Error("phase 2 exports require 24 FPS, portrait 720x1280")
     scene = story.get("scene_template")
-    if scene not in SCENE_TEMPLATES:
+    if not isinstance(scene, str) or scene not in SCENE_TEMPLATES:
         raise StoryV2Error(f"scene_template must be registered: {sorted(SCENE_TEMPLATES)}")
     title = story.get("title")
     if not isinstance(title, str) or not (3 <= len(title.strip()) <= 180):
@@ -67,7 +67,7 @@ def validate_story_v2(story: dict) -> dict:
                 raise StoryV2Error(f"beat {key}: invalid {field}")
         if len(beat["narration"].split()) > (end-start)*3.3:
             raise StoryV2Error(f"beat {key}: too many words for its timeline")
-        if beat["camera"] not in CAMERAS:
+        if not isinstance(beat["camera"], str) or beat["camera"] not in CAMERAS:
             raise StoryV2Error(f"beat {key}: unknown camera")
         actions = beat["actions"]
         if not isinstance(actions, list) or not actions or len(actions) > 5:
@@ -75,7 +75,10 @@ def validate_story_v2(story: dict) -> dict:
         for a in actions:
             if not isinstance(a, dict) or set(a) != {"type", "target"}:
                 raise StoryV2Error(f"beat {key}: unsafe action fields")
-            if a["type"] not in ACTION_TYPES or a["target"] not in SCENE_TEMPLATES[scene]:
+            if (not isinstance(a["type"], str) or
+                not isinstance(a["target"], str) or
+                a["type"] not in ACTION_TYPES or
+                a["target"] not in SCENE_TEMPLATES[scene]):
                 raise StoryV2Error(f"beat {key}: unregistered action or target")
     if abs(cursor-duration) > 0.0001:
         raise StoryV2Error("last beat must end at video duration")
