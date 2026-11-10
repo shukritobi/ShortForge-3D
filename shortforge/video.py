@@ -10,7 +10,6 @@ from .contract import validate_storyboard, WIDTH, HEIGHT, FPS, SECONDS
 
 def compose(story: dict, output: str | Path, *, ffmpeg="ffmpeg") -> Path:
     validate_storyboard(story)
-    ffmpeg = require_program(ffmpeg)
     out = Path(output).resolve()
     frames = out/"frames"
     wav = out/"audio"/"narration.wav"
@@ -19,6 +18,7 @@ def compose(story: dict, output: str | Path, *, ffmpeg="ffmpeg") -> Path:
         raise FileNotFoundError(f"missing {len(missing)} Blender frames; first missing frame: {missing[0]:06d}")
     if not wav.exists():
         raise FileNotFoundError(f"narration not found: {wav}")
+    ffmpeg = require_program(ffmpeg)
     _,ass = write_captions(story,out/"captions")
     video = out/"draft.mp4"
     # libass takes a POSIX/escaped filter path; run with the working directory
