@@ -182,7 +182,8 @@ def run(*, drive:Path | None, full:bool=False, audio:bool=True) -> int:
             if any(r["stage"]=="full" and r["status"]=="ok" for r in results):
                 copy_if(water / file, folder / file)
     audio_dir=water/"audio"
-    if audio:
+    audio_ran = any(x["stage"]=="audio" for x in results)
+    if audio and audio_ran:
         # Share narrated audio only after a successful audio QA.
         audio_ok=any(x["stage"]=="audio" and x["status"]=="ok" for x in results)
         if audio_ok:
@@ -190,8 +191,22 @@ def run(*, drive:Path | None, full:bool=False, audio:bool=True) -> int:
                 copy_if(audio_dir / f, folder / f)
         for f in ("timing_report.json","tts_metrics.jsonl"):
             copy_if(audio_dir / f, folder / f)
-        for src in sorted((audio_dir/"beats").glob("beat_*_raw.wav")) if (audio_dir/"beats").is_dir() else []:
-            copy_if(src, folder/"voice_samples"/src.name)
+        # Never attach raw samples from a previous attempt that had no current
+        # Qwen beat event. Worker cache hits are explicitly logged too.
+        metrics_file = audio_dir / "tts_metrics.jsonl"
+        current_beats = set()
+        if metrics_file.is_file():
+            for line in metrics_file.read_text(encoding="utf-8",errors="replace").splitlines():
+                try:
+                    event = json.loads(line)
+                    if event.get("event") in ("beat_generated","beat_cached"):
+                        current_beats.add(str(event.get("beat")))
+                except ValueError:
+                    pass
+        for i, beat in enumerate(range(1,9)):
+            if f"{beat:02d}" in current_beats:
+                copy_if(audio_dir/"beats"/f"beat_{i:02d}_raw.wav",
+                        folder/"voice_samples"/f"beat_{i:02d}_raw.wav")
     # Copy latest pc_agent diagnostics after each phase, not just the last run.
     diagn=OUTPUT/"diagnostics"
     if diagn.exists():
