@@ -65,6 +65,18 @@ def resolve_voice(voice, supported):
 
 
 def render_qwen(story, output, model_id, voice):
+    # User-visible speaker names can be capitalized; official Qwen speaker
+    # identifiers are lowercase. Check all voice caches before any model load.
+    voice = voice.casefold()
+    if all(sample_saved(output, index, beat, model_id, voice, "qwen")
+           for index, beat in enumerate(story["beats"])):
+        log_metric(output, event="all_beats_cached", provider="qwen",
+                   beats=len(story["beats"]), model_load_skipped=True)
+        for beat in story["beats"]:
+            log_metric(output, event="beat_cached", beat=beat["id"],
+                       device="not_loaded")
+        print("All Qwen beats cached; model load and GPU inference skipped.", flush=True)
+        return
     import torch
     import soundfile as sf
     from qwen_tts import Qwen3TTSModel

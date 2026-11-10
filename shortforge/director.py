@@ -20,7 +20,7 @@ Times cover 0 to 40 with no gaps. Use 7-10 beats.
 Only permitted cameras: wide, houses, pump, tower, cutaway, distribution, reveal.
 Only permitted actions: show_house, show_houses, show_pump, show_tower,
 fill_tank, show_pipes, flow_water, show_all.
-Create roughly 95-115 words of narration for 40 seconds.
+Keep narration concise: about 65-85 words total for 40 seconds, normally no more than 2.5 words per second in each beat. Prioritize conversational pacing over forcing words into the shot.
 Avoid invented facts, precise claims without evidence, unsafe advice,
 and any references to existing channels or their scripts.
 This animation registry only depicts water supply infrastructure.
