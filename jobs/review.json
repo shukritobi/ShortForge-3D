@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "task": "review",
+  "storyboard": "examples/water_tower_40s.json",
+  "out": "output/water_tower"
+}

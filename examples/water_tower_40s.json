@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "title": "How a Water Tower Supplies an Entire Neighbourhood",
+  "duration": 40,
+  "fps": 24,
+  "resolution": [
+    720,
+    1280
+  ],
+  "beats": [
+    {
+      "id": "01",
+      "start": 0,
+      "end": 4,
+      "problem": "One house needs water.",
+      "solution": "Connect a basic water main.",
+      "narration": "If you pump water to one house, the taps work.",
+      "camera": "houses",
+      "actions": [
+        "show_house"
+      ]
+    },
+    {
+      "id": "02",
+      "start": 4,
+      "end": 9,
+      "problem": "More houses demand water at the same time.",
+      "solution": "Add a connected neighbourhood.",
+      "narration": "But six more houses turn on theirs. Pressure drops.",
+      "camera": "wide",
+      "actions": [
+        "show_houses"
+      ]
+    },
+    {
+      "id": "03",
+      "start": 9,
+      "end": 14,
+      "problem": "Supply needs enough energy to reach the network.",
+      "solution": "Install a municipal pumping station.",
+      "narration": "So you add a bigger pump to the system.",
+      "camera": "pump",
+      "actions": [
+        "show_pump"
+      ]
+    },
+    {
+      "id": "04",
+      "start": 14,
+      "end": 19,
+      "problem": "Demand changes throughout the day.",
+      "solution": "Use storage to buffer changes.",
+      "narration": "But demand keeps changing. The pumps need a buffer.",
+      "camera": "wide",
+      "actions": [
+        "show_houses"
+      ]
+    },
+    {
+      "id": "05",
+      "start": 19,
+      "end": 25,
+      "problem": "The neighbourhood needs elevated storage.",
+      "solution": "Assemble an elevated water tank.",
+      "narration": "So build a water tower. Pump water into its tank.",
+      "camera": "tower",
+      "actions": [
+        "show_tower",
+        "fill_tank"
+      ]
+    },
+    {
+      "id": "06",
+      "start": 25,
+      "end": 32,
+      "problem": "Water must reach taps over a wider area.",
+      "solution": "Use gravity-fed distribution mains.",
+      "narration": "Now gravity creates pressure, pushing water through underground pipes.",
+      "camera": "cutaway",
+      "actions": [
+        "show_pipes",
+        "flow_water"
+      ]
+    },
+    {
+      "id": "07",
+      "start": 32,
+      "end": 37,
+      "problem": "Every home needs a branch connection.",
+      "solution": "Connect the final service pipes.",
+      "narration": "Those mains branch off to supply each nearby home.",
+      "camera": "distribution",
+      "actions": [
+        "flow_water"
+      ]
+    },
+    {
+      "id": "08",
+      "start": 37,
+      "end": 40,
+      "problem": "Stored water eventually needs replenishing.",
+      "solution": "Refill the tank during operation.",
+      "narration": "Keep it filled. That's your water tower.",
+      "camera": "reveal",
+      "actions": [
+        "show_all",
+        "fill_tank"
+      ]
+    }
+  ]
+}
