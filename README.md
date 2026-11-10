@@ -48,6 +48,20 @@ You can also run shortforge doctor or a reviewed JSON task in jobs/preview.json.
 See docs/PC_AGENT.md for full instructions and privacy notes. The runner never
 opens a port, uploads your logs, or executes arbitrary commands.
 
+### Updated visual review: six Blender keyframes
+
+The water tower has been rebuilt with connected legs/braces, a cutaway tank,
+a visible underground trench, pitched-roof houses and improved portrait framing.
+Run this **before** a full render (no Piper required):
+
+```powershell
+python scripts/pc_agent.py review
+```
+
+This creates `output/water_tower/contact_sheet.png`, six individual
+`preview_XXXX.png` stills, `preview.png` for the existing Drive launcher, and
+`scene_manifest.json` for structural checks. See [visual QA guide](docs/SCENE_REBUILD.md).
+
 ### Quick start
 
 On Windows PowerShell:

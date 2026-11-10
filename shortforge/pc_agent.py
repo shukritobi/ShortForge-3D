@@ -17,7 +17,7 @@ import uuid
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "output"
 CONFIG = ROOT / ".shortforge.local.json"
-ALLOWED = {"doctor", "preview", "tests", "full"}
+ALLOWED = {"doctor", "preview", "review", "tests", "full"}
 
 
 def now() -> str:
@@ -158,7 +158,7 @@ def scoped_path(base: Path, path: str | Path) -> Path:
 
 def validate_job(job: dict) -> dict:
     if not isinstance(job, dict) or job.get("version") != 1 or job.get("task") not in ALLOWED:
-        raise ValueError("Expected a version 1 doctor/preview/tests/full job")
+        raise ValueError("Expected a version 1 doctor/preview/review/tests/full job")
     if set(job) - {"version", "task", "blender", "voice", "storyboard", "out", "preview_frame"}:
         raise ValueError("Unsupported job fields; shell commands are forbidden")
     if "storyboard" in job:
@@ -214,6 +214,16 @@ def run_task(task: str, *, blender: str | None = None, voice: str | None = None,
                        "--out", str(target.parent),
                        "--blender", information["tools"]["blender"]["path"],
                        "--preview-frame", str(preview_frame)]
+    elif task == "review":
+        if not information["ready_preview"]:
+            error = "Blender not ready for headless rendering. Open doctor.json."
+        else:
+            target = scoped_path(OUTPUT, out) / "contact_sheet.png"
+            command = [sys.executable, "-m", "shortforge.cli", "render",
+                       str(scoped_path(ROOT / "examples", storyboard)),
+                       "--out", str(target.parent),
+                       "--blender", information["tools"]["blender"]["path"],
+                       "--preview-frames", "120,240,480,576,720,888"]
     elif task == "full":
         if not information["ready_full"]:
             error = "Missing full-render prerequisites. Open doctor.json."
@@ -270,11 +280,11 @@ def run_task(task: str, *, blender: str | None = None, voice: str | None = None,
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Local ShortForge diagnostics and safe task runner")
     sub = parser.add_subparsers(dest="task", required=True)
-    for name in ("doctor", "preview", "tests", "full"):
+    for name in ("doctor", "preview", "review", "tests", "full"):
         cmd = sub.add_parser(name)
         cmd.add_argument("--blender")
         cmd.add_argument("--voice")
-        if name in ("preview", "full"):
+        if name in ("preview", "review", "full"):
             cmd.add_argument("--storyboard", default="examples/water_tower_40s.json")
             cmd.add_argument("--out", default="output/water_tower")
         if name == "preview":

@@ -8,27 +8,63 @@ import hashlib
 import json
 import subprocess
 from pathlib import Path
+import shutil
 from .contract import load_storyboard, narration, word_count
 from .director import template_storyboard, ollama_storyboard
 from .captions import write_captions
 from .audio import create_audio, require_program
 from .pc_agent import find_blender
 from .video import compose, inspect_video
+from .scene_validation import validate_scene_manifest
 
 ROOT = Path(__file__).resolve().parents[1]
 BLENDER_SCRIPT = ROOT/"scripts"/"blender_water_tower.py"
 DEFAULT_STORY = ROOT/"examples"/"water_tower_40s.json"
 
 
-def render(storyboard: Path, output: Path, *, blender="blender", preview_frame=None):
+def render(storyboard: Path, output: Path, *, blender="blender", preview_frame=None, preview_frames=None):
     executable = find_blender(blender)
     if not executable:
         raise RuntimeError("Blender not detected. Run: python scripts/pc_agent.py doctor; or pass --blender with the full blender.exe path")
+    if preview_frame is not None and preview_frames is not None:
+        raise ValueError("Choose either --preview-frame or --preview-frames")
+    if preview_frames is not None and (not 2 <= len(preview_frames) <= 6 or
+                                       len(set(preview_frames)) != len(preview_frames) or
+                                       any(not 1 <= x <= 960 for x in preview_frames)):
+        raise ValueError("Expected 2-6 distinct review frames between 1 and 960")
     command = [executable,"-b","--python",str(BLENDER_SCRIPT),
                "--","--storyboard",str(storyboard.resolve()),"--out",str(output.resolve())]
     if preview_frame is not None:
         command.extend(["--preview-frame",str(preview_frame)])
+    if preview_frames is not None:
+        command.extend(["--preview-frames",",".join(map(str,preview_frames))])
     subprocess.run(command,check=True)
+    manifest = validate_scene_manifest(output / "scene_manifest.json")
+    print("Scene audit passed:", manifest["structural_counts"])
+    if preview_frames is not None:
+        _contact_sheet(output, preview_frames)
+
+
+def _contact_sheet(output: Path, frames: list[int]) -> None:
+    """Create a light portrait-friendly review contact sheet using existing FFmpeg."""
+    ffmpeg = shutil.which("ffmpeg")
+    if not ffmpeg:
+        print("FFmpeg not found; review frames rendered individually, no contact sheet.")
+        return
+    command = [ffmpeg, "-hide_banner", "-loglevel", "error", "-y"]
+    for number in frames:
+        command.extend(["-i",str((output/("preview_%04d.png" % number)).resolve())])
+    cells = [f"[{i}:v]scale=360:640[v{i}]" for i in range(len(frames))]
+    chain = "".join(f"[v{i}]" for i in range(len(frames)))
+    layouts = "|".join(f"{(i%3)*360}_{(i//3)*640}" for i in range(len(frames)))
+    filters = ";".join(cells) + ";" + chain + f"xstack=inputs={len(frames)}:layout={layouts}:fill=black[out]"
+    command.extend(["-filter_complex",filters,"-map","[out]",
+                    "-frames:v","1",str((output/"contact_sheet.png").resolve())])
+    try:
+        subprocess.run(command,check=True)
+        print("Review contact sheet:", output/"contact_sheet.png")
+    except (OSError, subprocess.CalledProcessError) as exc:
+        print("Contact sheet failed (individual preview frames remain available):",exc)
 
 
 def parser():
@@ -52,7 +88,10 @@ def parser():
     r.add_argument("storyboard",type=Path)
     r.add_argument("--out",type=Path,default=Path("output/water_tower"))
     r.add_argument("--blender",default="blender")
-    r.add_argument("--preview-frame",type=int)
+    preview_opts = r.add_mutually_exclusive_group()
+    preview_opts.add_argument("--preview-frame",type=int)
+    preview_opts.add_argument("--preview-frames",type=str,
+                              help="2-6 comma-separated frame numbers, e.g. 120,240,480,576,720,888")
     a = sub.add_parser("audio")
     a.add_argument("storyboard",type=Path)
     a.add_argument("--out",type=Path,default=Path("output/water_tower"))
@@ -108,7 +147,14 @@ def main(argv=None):
         print(write_captions(story,args.out))
         return
     if args.command == "render":
-        render(args.storyboard,args.out,blender=args.blender,preview_frame=args.preview_frame)
+        review = None
+        if args.preview_frames:
+            try:
+                review = [int(part) for part in args.preview_frames.split(",")]
+            except ValueError as exc:
+                raise SystemExit("--preview-frames must contain comma-separated integers") from exc
+        render(args.storyboard,args.out,blender=args.blender,
+               preview_frame=args.preview_frame,preview_frames=review)
         return
     if args.command == "audio":
         print(create_audio(story,args.out/"audio",model=args.voice,
