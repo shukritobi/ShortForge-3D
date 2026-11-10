@@ -22,7 +22,10 @@ sys.path.insert(0,str(ROOT))
 sys.path.insert(0,str(Path(__file__).resolve().parent))
 from shortforge.contract import load_storyboard
 from shortforge.story_v2 import total_frames
+from shortforge.camera_math import fit_distance
+from shortforge.render_cache import shot_keys, valid_png
 from blender_assets_v2 import Kit, material, sphere
+from blender_actions import transform_action
 
 
 def frame(seconds, fps=24):
@@ -95,12 +98,29 @@ def set_camera_motion(scene, cam, kit, beat, previous_at):
     }
     mode=beat["camera"]
     offset=modes[mode]
+    objects=kit.subjects.get(target,kit.groups.get(target,[]))
+    if target in ("sun","lights","ground") and "house" in kit.subjects:
+        objects=kit.subjects["house"]
+    corners=[obj.matrix_world @ Vector(p) for obj in objects
+             if obj.type in ("MESH","CURVE") for p in obj.bound_box]
+    if corners:
+        low=Vector(tuple(min(p[i] for p in corners) for i in range(3)))
+        high=Vector(tuple(max(p[i] for p in corners) for i in range(3)))
+        anchor=(low+high)*.5
+        towards=offset.normalized()
+        right=Vector((0,0,1)).cross(towards).normalized()
+        up=towards.cross(right).normalized()
+        relative=[p-anchor for p in corners]
+        tan_y=cam.data.sensor_height/(2*cam.data.lens)
+        tan_x=tan_y*scene.render.resolution_x/scene.render.resolution_y
+        distance=fit_distance([(p.dot(right),p.dot(up),p.dot(towards)) for p in relative],tan_x,tan_y)
+        offset=towards*max(distance,3.8)
     if target=="ground" and target not in kit.focus:
         anchor=Vector((0,-3,0))
     if mode=="section":
         anchor.z=max(anchor.z,0.1)
-    start=frame(beat["start"])
-    end=frame(beat["end"])-1
+    start=frame(beat["start"],scene.render.fps)
+    end=frame(beat["end"],scene.render.fps)-1
     arrive=min(end,start+max(8,int((end-start)*.35)))
     # Preserve the prior look-at on each shot's opening frame so the
     # rotation interpolates smoothly instead of snapping to a new target.
@@ -119,14 +139,18 @@ def animate_appear(objects, at, fps, *, pulse=False):
         # again in later beats; only the first reveal performs assembly.
         if obj.get("sf2_is_visible"):
             if pulse:
-                base=Vector(obj.scale)
-                at_mid=at+max(5,int(.24*fps))
-                obj.scale=base
-                obj.keyframe_insert(data_path="scale",frame=at)
-                obj.scale=base*1.05
-                obj.keyframe_insert(data_path="scale",frame=at_mid)
-                obj.scale=base
-                obj.keyframe_insert(data_path="scale",frame=at_mid+max(6,int(.25*fps)))
+                # Colour emphasis preserves physical contacts (scaling each
+                # component separately detached rails and conduit terminals).
+                if obj.data.materials:
+                    if not obj.get("sf_highlight_material"):
+                        obj.data.materials[0]=obj.data.materials[0].copy()
+                        obj["sf_highlight_material"]=True
+                    node=obj.data.materials[0].node_tree.nodes.get("Principled BSDF")
+                    strength=node.inputs["Emission Strength"]
+                    node.inputs["Emission Color"].default_value=(.1,.35,.6,1)
+                    for f,value in ((at,0),(at+int(.3*fps),.35),(at+int(.7*fps),0)):
+                        strength.default_value=value
+                        strength.keyframe_insert(data_path="default_value",frame=f)
             continue
         obj["sf2_is_visible"]=True
         final=Vector(obj.scale)
@@ -162,11 +186,12 @@ def flow_dots(kit, target, begin, end):
     route=kit.paths.get(target)
     if not route:
         return
-    mat=material("flow_blue" if target in ("main","branch","faucet","tank")
-                 else "flow_yellow",(.15,.79,.98) if target in ("main","branch","faucet","tank")
+    water=getattr(kit,"medium",None)=="water"
+    mat=material("flow_blue" if water
+                 else "flow_yellow",(.15,.79,.98) if water
                  else (.99,.79,.16),emission=1.4)
     for i in range(5):
-        dot=sphere(f"{target}_flow_{begin}_{i}",route[0],.135,mat)
+        dot=sphere(f"{target}_flow_{begin}_{i}",route[0],.065 if water else .045,mat)
         start=begin+i*4
         stop=max(start+2,end-1)
         visibility(dot,start,stop)
@@ -186,6 +211,7 @@ def configure_scene(story):
     scene.render.resolution_percentage=100
     scene.frame_start=1
     scene.frame_end=total_frames(story)
+    scene.render.fps=story["fps"]
     scene.render.film_transparent=False
     scene.render.image_settings.file_format="PNG"
     scene.render.image_settings.color_mode="RGB"
@@ -194,8 +220,14 @@ def configure_scene(story):
     scene.world.use_nodes=True
     bg=scene.world.node_tree.nodes.get("Background")
     bg.inputs["Color"].default_value=(.46,.65,.85,1)
-    bg.inputs["Strength"].default_value=.84
+    bg.inputs["Strength"].default_value=.30
     scene.view_settings.view_transform="AgX"
+    scene.view_settings.look="AgX - Medium High Contrast"
+    bpy.ops.object.light_add(type="SUN",location=(0,0,10))
+    sun=bpy.context.object
+    sun.rotation_euler=(.45,-.5,-.4)
+    sun.data.energy=2.0
+    sun.data.angle=.12
     bpy.ops.object.light_add(type="AREA",location=(-6,-9,14))
     lamp=bpy.context.object
     lamp.name="sf2_sun_area"
@@ -207,6 +239,8 @@ def configure_scene(story):
     cam=bpy.context.object
     cam.name="sf2_portrait_camera"
     cam.data.lens=26
+    cam.data.sensor_fit="VERTICAL"
+    cam.data.sensor_height=32
     scene.camera=cam
     camera_pose(cam,cam.location,Vector((0,0,2)),1)
     return scene,cam
@@ -215,6 +249,8 @@ def configure_scene(story):
 def animate(story,kit,cam,scene):
     for name,objects in kit.groups.items():
         if name=="ground":
+            for obj in objects:
+                obj["sf2_is_visible"]=True
             continue
         for obj in objects:
             obj["sf2_is_visible"]=False
@@ -223,14 +259,17 @@ def animate(story,kit,cam,scene):
             obj.keyframe_insert(data_path="hide_render",frame=1)
             obj.keyframe_insert(data_path="hide_viewport",frame=1)
     for beat in story["beats"]:
-        start=frame(beat["start"])
-        end=frame(beat["end"])-1
+        start=frame(beat["start"],story["fps"])
+        end=frame(beat["end"],story["fps"])-1
         set_camera_motion(scene,cam,kit,beat,start)
         for action in beat["actions"]:
             typ,target=action["type"],action["target"]
+            for dependency in kit.dependencies.get(target,[]):
+                animate_appear(kit.groups[dependency],start,story["fps"])
             objects=kit.groups[target]
             animate_appear(objects,start,story["fps"],
                            pulse=typ in ("pulse","highlight"))
+            transform_action(objects,action,start,end,story["fps"])
             if typ=="flow":
                 flow_dots(kit,target,start,end)
             if typ=="cutaway":
@@ -252,7 +291,9 @@ def animate(story,kit,cam,scene):
 def fingerprint(story):
     h=hashlib.sha256()
     h.update(json.dumps(story,sort_keys=True).encode("utf-8"))
-    for path in (Path(__file__),ROOT/"scripts"/"blender_assets_v2.py"):
+    for path in (Path(__file__),ROOT/"scripts"/"blender_assets_v2.py",
+                 ROOT/"shortforge"/"scene_math.py",ROOT/"shortforge"/"camera_math.py",
+                 ROOT/"scripts"/"blender_actions.py"):
         h.update(path.read_bytes())
     h.update(bpy.app.version_string.encode("utf-8"))
     return h.hexdigest()
@@ -267,6 +308,10 @@ def emit_scene_manifest(scene,story,kit,output):
         "object_count":len(bpy.data.objects),"action_count":sum(len(b["actions"]) for b in story["beats"]),
         "camera_presets":list(dict.fromkeys(b["camera"] for b in story["beats"])),
         "renderer":"blender_v2","fingerprint":fingerprint(story),
+        "asset_instances":[{"id":obj.name,"category":group,"units":"metres",
+                            "version":"0.2.0","dimensions":list(obj.dimensions),
+                            "dependencies":kit.dependencies.get(group,[])}
+                           for group,objects in kit.groups.items() for obj in objects],
     }
     (output/"scene_manifest.json").write_text(json.dumps(data,indent=2)+"\n",encoding="utf-8")
     return data
@@ -275,6 +320,7 @@ def emit_scene_manifest(scene,story,kit,output):
 def render(story,out,preview_frames=None,start=None,end=None):
     scene,cam=configure_scene(story)
     kit=Kit().build(story["scene_template"])
+    bpy.context.view_layer.update()
     animate(story,kit,cam,scene)
     manifest=emit_scene_manifest(scene,story,kit,out)
     if preview_frames is not None:
@@ -293,24 +339,35 @@ def render(story,out,preview_frames=None,start=None,end=None):
     frames=out/"frames"
     frames.mkdir(parents=True,exist_ok=True)
     state=out/"render_state_v2.json"
+    keys=shot_keys(story,fingerprint({}))
+    previous=json.loads(state.read_text(encoding="utf-8")) if state.is_file() else {}
+    records=previous.get("verified_frames",{})
     meta={"fingerprint":manifest["fingerprint"],"frames":scene.frame_end,
-          "scene_template":story["scene_template"]}
-    if state.is_file():
-        previous=json.loads(state.read_text(encoding="utf-8"))
-        if previous != meta:
-            raise RuntimeError("Render cache contains a different scene or script; choose a fresh --out folder")
-    elif list(frames.glob("frame_*.png")):
-        raise RuntimeError("Untracked frames found; refuse unsafe stale-frame reuse. Choose a fresh --out")
-    state.write_text(json.dumps(meta,indent=2)+"\n",encoding="utf-8")
+          "scene_template":story["scene_template"],"verified_frames":records}
+    def save_state():
+        temp=state.with_suffix(".tmp")
+        temp.write_text(json.dumps(meta)+"\n",encoding="utf-8")
+        temp.replace(state)
+    save_state()
     start=max(1,start or 1)
     end=min(scene.frame_end,end or scene.frame_end)
     for f in range(start,end+1):
         target=frames/f"frame_{f:06d}.png"
-        if target.is_file() and target.stat().st_size>100:
+        index=next(i for i,b in enumerate(story["beats"]) if f<=frame(b["end"],story["fps"])-1)
+        key=keys[index]
+        if records.get(str(f))==key and valid_png(target,story["resolution"]):
             continue
+        if target.exists():
+            archive=out/"cache_archive"/str(time.time_ns())
+            archive.mkdir(parents=True)
+            target.replace(archive/target.name)
         scene.frame_set(f)
         scene.render.filepath=str(target)
         bpy.ops.render.render(write_still=True)
+        if not valid_png(target,story["resolution"]):
+            raise RuntimeError(f"Invalid rendered PNG: {target}")
+        records[str(f)]=key
+        save_state()
         if f%24==0 or f==end:
             print(f"SHORTFORGE_RENDER frame={f}/{scene.frame_end}",flush=True)
 

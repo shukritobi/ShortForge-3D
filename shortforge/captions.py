@@ -66,10 +66,14 @@ def safe_ass_caption(text: str, max_chars: int = 22) -> str:
     return r"\N".join(escape_ass(line) for line in lines)
 
 
-def write_captions(story: dict, dest: str | Path) -> tuple[Path,Path]:
+def write_captions(story: dict, dest: str | Path, *, audio_dir=None) -> tuple[Path,Path]:
     dest = Path(dest)
     dest.mkdir(parents=True,exist_ok=True)
-    items = cues(story)
+    if audio_dir is not None:
+        from .alignment import aligned_cues
+        items=aligned_cues(story,audio_dir)
+    else:
+        items = cues(story)
     json_path = dest/"captions.json"
     json_path.write_text(json.dumps(items,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
     # ASS coordinates use the 720 x 1280 reference frame.

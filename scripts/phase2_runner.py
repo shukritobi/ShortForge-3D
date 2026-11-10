@@ -133,7 +133,13 @@ def run_phase2(topic:str,duration:int,*,mode:str="preview",
     folder=project_folder(topic,duration)
     folder.mkdir(parents=True,exist_ok=True)
     path=folder/"storyboard.json"
-    path.write_text(json.dumps(story,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
+    if path.exists():
+        prior=load_storyboard(path)
+        if prior.get("scene_template")!=story["scene_template"] or prior["duration"]!=duration:
+            raise ValueError("Existing project has different topic/duration; choose a new project")
+        story=prior
+    else:
+        path.write_text(json.dumps(story,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
     run_id=stamp()+"-phase2-"+resolve_topic(topic)+"-"+mode
     run=OUTPUT/"review_runs"/run_id
     # Use a run-specific suffix if launched twice in one second.
@@ -142,7 +148,7 @@ def run_phase2(topic:str,duration:int,*,mode:str="preview",
         run=OUTPUT/"review_runs"/(run_id+"-"+uuid.uuid4().hex[:6])
     run.mkdir(parents=True)
     sampler=Sampler(run/"system_samples.jsonl")
-    numbers=preview_frames(duration)
+    numbers=preview_frames(duration,story["fps"])
     py=sys.executable
     stages=[
         ("tests",[py,"-m","pytest","-q"]),
@@ -205,7 +211,7 @@ def run_phase2(topic:str,duration:int,*,mode:str="preview",
 def main():
     p=argparse.ArgumentParser(description="Local multi-topic 3D production review")
     p.add_argument("--topic",required=True,help="water_tower or solar_home")
-    p.add_argument("--duration",type=int,choices=DURATIONS,default=90)
+    p.add_argument("--duration",type=int,default=90)
     p.add_argument("--mode",choices=["preview","full","recover-preview"],default="preview")
     p.add_argument("--tts",choices=["qwen","kokoro","none"],default="qwen")
     p.add_argument("--drive",type=Path)

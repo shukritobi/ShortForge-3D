@@ -104,6 +104,8 @@ class Kit:
         self.groups={}
         self.paths={}
         self.focus={}
+        self.subjects={}
+        self.dependencies={}
         self.cutaway_covers=[]
         self.colors={
             "ground": material("grass",(.32,.49,.31)),
@@ -168,6 +170,7 @@ class Kit:
         return a
 
     def water(self):
+        self.medium="water"
         self.scene_ground(cutaway=True)
         for i,(x,y) in enumerate(((-11,4),(-7,4),(-3,4),(-11,-2),(-7,-2),(-3,-2))):
             self.put("neighbourhood",*self.house(f"water_home_{i}",x,y,
@@ -189,9 +192,9 @@ class Kit:
                  cylinder("tank_base",(4,3,6.05),1.60,.16,self.colors["dark"]))
         self.put("main",pipe("rising_pipe",[(1.4,2,.7),(4,2,.7),(4,2,6.8)],
                              self.colors["blue"],.13),
-                 pipe("distribution_main",[(4,3,1),(4,-4,-.2),(-13,-4,-.2)],
+                 pipe("distribution_main",[(4,3,7.1),(4,3,-.2),(4,-4,-.2),(-13,-4,-.2)],
                       self.colors["blue"],.15))
-        self.paths["main"]=[(4,3,7.1),(4,3,1),(4,-4,-.2),(-13,-4,-.2)]
+        self.paths["main"]=[(4,3,7.1),(4,3,-.2),(4,-4,-.2),(-13,-4,-.2)]
         branch_objs=[]
         for i,x in enumerate((-11,-7,-3)):
             branch_objs.append(pipe(f"branch_{i}",[(x,-4,-.2),(x,1,-.2),(x,2.5,.25)],
@@ -209,7 +212,12 @@ class Kit:
         Visible model parts stay registered to the storyboard's semantic targets.
         """
         self.scene_ground()
+        self.dependencies={"sun":["house"],"panels":["house"],
+                           "inverter":["house","panels"],"battery":["house","inverter"],
+                           "meter":["house","inverter"],"grid":["house","inverter","meter"],
+                           "lights":["house","inverter"]}
         self.put("house",*self.house("solar_main",0,1.0))
+        self.subjects["house"]=list(self.groups["house"])
         for i,(dx,dy) in enumerate(((-8,5),(-11,2),(9,6))):
             self.put("house",*self.house(f"nearby_{i}",dx,dy,
                          tint=(.79,.78,.68+.025*i)))
@@ -220,25 +228,25 @@ class Kit:
         for col,local_x in enumerate((.48,1.17)):
             for row,local_y in enumerate((-.82,0,.82)):
                 centre_y=1.0+local_y
-                centre_z=roof_height(local_x)+.18
+                centre=roof_surface_point(local_x,centre_y,0,0,offset=.1675)
                 panel_assets.append(cube(
-                    f"pv_{col}_{row}",(local_x,centre_y,centre_z),
+                    f"pv_{col}_{row}",centre,
                     (.69,.72,.055),self.colors["panels"],tilt=ROOF_PITCH))
                 # Two thin silver standoff rails on the upper roof surface.
                 for du in (-.20,.20):
-                    px,p_y,p_z=roof_surface_point(local_x,centre_y,du,0,offset=.105)
+                    px,p_y,p_z=roof_surface_point(local_x,centre_y,du,0,offset=.1125)
                     panel_assets.append(cube(
                         f"pv_mount_{col}_{row}_{int(du*100)}",(px,p_y,p_z),
                         (.065,.69,.055),self.colors["dark"],tilt=ROOF_PITCH))
                 # Subtle cell divisions, following the physical roof normal.
                 for u in (-.12,.12):
-                    p0=roof_surface_point(local_x,centre_y,u,-.34,offset=.216)
-                    p1=roof_surface_point(local_x,centre_y,u,.34,offset=.216)
+                    p0=roof_surface_point(local_x,centre_y,u,-.34,offset=.197)
+                    p1=roof_surface_point(local_x,centre_y,u,.34,offset=.197)
                     panel_assets.append(pipe(f"pv_cell_line_u_{col}_{row}_{int(u*100)}",
                                              [p0,p1],self.colors["glass"],.006))
                 for v in (-.16,.16):
-                    p0=roof_surface_point(local_x,centre_y,-.30,v,offset=.216)
-                    p1=roof_surface_point(local_x,centre_y,.30,v,offset=.216)
+                    p0=roof_surface_point(local_x,centre_y,-.30,v,offset=.197)
+                    p1=roof_surface_point(local_x,centre_y,.30,v,offset=.197)
                     panel_assets.append(pipe(f"pv_cell_line_v_{col}_{row}_{int(v*100)}",
                                              [p0,p1],self.colors["glass"],.006))
         self.put("panels",*panel_assets)
@@ -258,13 +266,13 @@ class Kit:
                       self.colors["dark"],.035))
 
         self.put("meter",
-                 cube("energy_meter",(.92,-1.41,1.70),(.44,.16,.65),
+                 cube("energy_meter",(.92,-.43,1.70),(.44,.16,.65),
                       self.colors["white"]),
-                 cube("meter_screen",(.92,-1.505,1.79),(.24,.025,.18),
+                 cube("meter_screen",(.92,-.525,1.79),(.24,.025,.18),
                       self.colors["glass"]),
-                 pipe("ac_wall_conduit",[(1.66,-.22,1.50),(1.60,-1.43,1.50),
-                                          (1.15,-1.43,1.50)],
-                      self.colors["dark"],.032))
+                 pipe("ac_wall_conduit",[(1.66,-.22,1.50),(1.60,-.43,1.50),
+                                          (1.13,-.43,1.50)],
+                      material("ac_wire",(.07,.27,.65)),.032))
 
         # Storage is placed on a pad at grade, with a physical DC cable.
         self.put("battery",
@@ -283,10 +291,10 @@ class Kit:
                  pipe("power_pole",[(7,-2,0),(7,-2,5.0)],
                       self.colors["dark"],.11),
                  pipe("service_drop",[(7,-2,4.50),(5,-2,3.80),
-                                      (2.8,-1.6,2.8),(1.45,-1.43,1.7)],
+                                      (1.56,-.43,2.8),(1.56,-.43,1.7),(.92,-.43,1.7)],
                       self.colors["dark"],.028))
         self.put("lights",
-                 sphere("window_lamp",(.62,-1.435,1.78),.12,self.colors["sun"]))
+                 sphere("window_lamp",(.62,-.435,1.78),.12,self.colors["sun"]))
 
         # Particle flow routes deliberately match actual cable endpoints.
         self.paths["sun"]=[(-5.3,4.2,9.2),(.85,1.0,3.5)]
@@ -294,7 +302,7 @@ class Kit:
                                (1.58,-.20,2.40),(1.58,-.20,2.11)]
         self.paths["battery"]=[(1.72,-.25,1.22),(1.88,-.25,1.22),
                                 (1.88,-.45,.80),(2.16,-.45,.81)]
-        self.paths["grid"]=[(1.45,-1.43,1.7),(2.8,-1.6,2.8),
+        self.paths["grid"]=[(.92,-.43,1.7),(1.56,-.43,1.7),(1.56,-.43,2.8),
                              (5,-2,3.80),(7,-2,4.50)]
         self.paths["inverter"]=self.paths["panels"]
         self.paths["lights"]=[(1.15,-1.43,1.50),(.62,-1.435,1.78)]
@@ -308,11 +316,59 @@ class Kit:
             "ground":(0,1.0,.5),
         })
 
+    def rainwater(self):
+        self.medium="water"
+        self.scene_ground()
+        self.put("house",*self.house("rain_home",0,1))
+        self.subjects["house"]=list(self.groups["house"])
+        routes={
+            "gutter":[(1.70,-.55,2.98),(1.70,2.55,2.90)],
+            "downpipe":[(1.70,2.55,2.90),(2.10,2.55,2.90),(2.10,2.55,2.15)],
+            "filter":[(2.10,2.55,2.15),(2.60,2.55,2.15)],
+            "diverter":[(2.60,2.55,2.15),(2.60,2.55,.30)],
+            "inlet":[(2.60,2.55,2.15),(3.6,2.55,2.15)],
+            "overflow":[(4.20,2.55,2.0),(4.8,2.55,2.0),(4.8,2.55,.2),(5.6,2.55,.2)],
+            "outlet":[(3.60,1.80,.35),(3.60,.60,.35),(5.5,.60,.35),(5.5,-1,.35)]}
+        for name,route in routes.items():
+            self.put(name,pipe(name,route,self.colors["blue"],.075 if name!="gutter" else .12))
+            self.paths[name]=route
+        self.put("filter",cube("leaf_screen",(2.35,2.55,2.15),(.45,.35,.30),self.colors["dark"]))
+        self.put("tank",cylinder("tank_pad",(3.6,2.55,.10),1.0,.20,self.colors["white"]),
+                 cylinder("rain_tank_floor",(3.6,2.55,.25),.85,.10,self.colors["dark"]),
+                 cylinder("rain_tank_water",(3.6,2.55,.85),.79,1.1,self.colors["blue"]),
+                 cylinder("rain_tank_lid",(3.6,2.55,2.30),.88,.12,self.colors["white"]))
+        cover=cylinder("rain_tank_cover",(3.6,2.55,1.25),.86,2.0,self.colors["battery"])
+        self.put("tank",cover)
+        self.cutaway_covers.append(cover)
+        # Rear half-shell remains visible after the front explanatory section opens.
+        vertices=[]
+        for z in (.25,2.25):
+            vertices.extend((3.6+.85*math.cos(i*math.pi/24),2.55+.85*math.sin(i*math.pi/24),z)
+                            for i in range(25))
+        mesh=bpy.data.meshes.new("rain_tank_half_shell")
+        mesh.from_pydata(vertices,[],[(i,i+1,i+26,i+25) for i in range(24)])
+        mesh.update()
+        obj=bpy.data.objects.new("sf_rain_tank_section",mesh)
+        bpy.context.collection.objects.link(obj)
+        mesh.materials.append(self.colors["battery"])
+        self.put("tank",obj)
+        self.put("pump",cube("garden_pump",(3.6,.6,.45),(.55,.60,.50),self.colors["dark"]))
+        self.put("garden",cube("garden_bed",(5.5,-1,.13),(1.7,1.2,.26),self.colors["soil"]))
+        for i in range(3):
+            self.put("garden",sphere(f"plant_{i}",(5+i*.5,-1,.40),.22,self.colors["ground"]))
+        self.paths["tank"]=[(3.6,2.55,2.15),(3.6,2.55,.4)]
+        self.dependencies={"gutter":["house"],"downpipe":["house","gutter"],
+            "filter":["house","gutter","downpipe"],"diverter":["filter"],
+            "inlet":["filter","diverter"],"overflow":["tank"],
+            "outlet":["tank"],"pump":["outlet"],"garden":["outlet","pump"]}
+
     def build(self, scene_template):
         if scene_template=="water_distribution":
             self.water()
         elif scene_template=="solar_home":
             self.solar()
+        elif scene_template=="rainwater":
+            self.rainwater()
         else:
             raise ValueError("Unregistered template "+str(scene_template))
         return self

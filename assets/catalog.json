@@ -14,7 +14,10 @@
         "grass",
         "road",
         "trees"
-      ]
+      ],
+      "units": "dimensionless",
+      "category": "environment",
+      "dependencies": []
     },
     {
       "id": "model.water_tower",
@@ -27,7 +30,10 @@
         "storage",
         "water",
         "infrastructure"
-      ]
+      ],
+      "units": "metres",
+      "category": "model",
+      "dependencies": []
     },
     {
       "id": "model.pump_station",
@@ -39,7 +45,10 @@
       "tags": [
         "pump",
         "water"
-      ]
+      ],
+      "units": "metres",
+      "category": "model",
+      "dependencies": []
     },
     {
       "id": "model.underground_main",
@@ -52,7 +61,10 @@
         "pipes",
         "cutaway",
         "distribution"
-      ]
+      ],
+      "units": "metres",
+      "category": "model",
+      "dependencies": []
     },
     {
       "id": "action.assemble_supports",
@@ -64,7 +76,10 @@
       "tags": [
         "construction",
         "animation"
-      ]
+      ],
+      "units": "dimensionless",
+      "category": "action",
+      "dependencies": []
     },
     {
       "id": "action.fill_tank",
@@ -76,7 +91,10 @@
       "tags": [
         "water",
         "animation"
-      ]
+      ],
+      "units": "dimensionless",
+      "category": "action",
+      "dependencies": []
     },
     {
       "id": "action.pipe_flow",
@@ -88,7 +106,10 @@
       "tags": [
         "water",
         "animation"
-      ]
+      ],
+      "units": "dimensionless",
+      "category": "action",
+      "dependencies": []
     },
     {
       "id": "camera.portrait_reveal",
@@ -100,7 +121,10 @@
       "tags": [
         "portrait",
         "camera"
-      ]
+      ],
+      "units": "dimensionless",
+      "category": "camera",
+      "dependencies": []
     },
     {
       "id": "model.house_basic",
@@ -113,7 +137,10 @@
         "shared",
         "housing",
         "parametric"
-      ]
+      ],
+      "units": "metres",
+      "category": "model",
+      "dependencies": []
     },
     {
       "id": "model.water_tower_v2",
@@ -125,7 +152,10 @@
       "tags": [
         "water",
         "tower"
-      ]
+      ],
+      "units": "metres",
+      "category": "model",
+      "dependencies": []
     },
     {
       "id": "model.pump_v2",
@@ -137,7 +167,10 @@
       "tags": [
         "water",
         "pump"
-      ]
+      ],
+      "units": "metres",
+      "category": "model",
+      "dependencies": []
     },
     {
       "id": "model.solar_array",
@@ -149,7 +182,10 @@
       "tags": [
         "solar",
         "electricity"
-      ]
+      ],
+      "units": "metres",
+      "category": "model",
+      "dependencies": []
     },
     {
       "id": "model.storage_battery",
@@ -161,7 +197,10 @@
       "tags": [
         "battery",
         "energy"
-      ]
+      ],
+      "units": "metres",
+      "category": "model",
+      "dependencies": []
     },
     {
       "id": "model.underground_main_v2",
@@ -173,7 +212,10 @@
       "tags": [
         "pipe",
         "cutaway"
-      ]
+      ],
+      "units": "metres",
+      "category": "model",
+      "dependencies": []
     },
     {
       "id": "action.assembly_v2",
@@ -185,7 +227,10 @@
       "tags": [
         "assembly",
         "animation"
-      ]
+      ],
+      "units": "dimensionless",
+      "category": "action",
+      "dependencies": []
     },
     {
       "id": "action.flow_v2",
@@ -197,7 +242,10 @@
       "tags": [
         "water",
         "electricity"
-      ]
+      ],
+      "units": "dimensionless",
+      "category": "action",
+      "dependencies": []
     },
     {
       "id": "action.excavation_cutaway",
@@ -209,7 +257,10 @@
       "tags": [
         "ground",
         "cutaway"
-      ]
+      ],
+      "units": "dimensionless",
+      "category": "action",
+      "dependencies": []
     },
     {
       "id": "camera.portrait_follow_v2",
@@ -221,7 +272,10 @@
       "tags": [
         "portrait",
         "camera"
-      ]
+      ],
+      "units": "dimensionless",
+      "category": "camera",
+      "dependencies": []
     },
     {
       "id": "environment.street_v2",
@@ -234,6 +288,76 @@
         "road",
         "trees",
         "landscape"
+      ],
+      "units": "dimensionless",
+      "category": "environment",
+      "dependencies": []
+    },
+    {
+      "id": "model.rainwater_system",
+      "version": "0.2.0",
+      "kind": "model",
+      "source": "scripts/blender_assets_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "units": "metres",
+      "category": "model",
+      "dependencies": [],
+      "tags": [
+        "gutter",
+        "first_flush",
+        "storage",
+        "overflow"
+      ]
+    },
+    {
+      "id": "action.transforms",
+      "version": "0.2.0",
+      "kind": "action",
+      "source": "scripts/blender_actions.py",
+      "license": "original",
+      "status": "prototype",
+      "units": "dimensionless",
+      "category": "action",
+      "dependencies": [],
+      "tags": [
+        "move",
+        "rotate",
+        "scale",
+        "explode",
+        "reassemble"
+      ]
+    },
+    {
+      "id": "camera.bounds_fitting",
+      "version": "0.2.0",
+      "kind": "camera",
+      "source": "shortforge/camera_math.py",
+      "license": "original",
+      "status": "prototype",
+      "units": "dimensionless",
+      "category": "camera",
+      "dependencies": [],
+      "tags": [
+        "portrait",
+        "bounds"
+      ]
+    },
+    {
+      "id": "sfx.procedural_library",
+      "version": "0.2.0",
+      "kind": "sfx",
+      "source": "shortforge/sfx.py",
+      "license": "original",
+      "status": "prototype",
+      "units": "dimensionless",
+      "category": "sfx",
+      "dependencies": [],
+      "tags": [
+        "original",
+        "assembly",
+        "water",
+        "electric"
       ]
     }
   ]

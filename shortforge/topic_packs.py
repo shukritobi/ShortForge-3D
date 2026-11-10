@@ -57,12 +57,15 @@ SOLAR = [
 ("A meter measures electricity flowing between home and network.", "meter","appear","detail"),
 ("Monitoring software tracks generation and household consumption.", "meter","pulse","detail"),
 ("Panel angle and shade strongly influence the daily output.", "panels","highlight","overhead"),
-("Installers also allow for heat, weather and roof loading.", "panels","highlight","detail"),
+("Mounts must withstand wind and weather.", "panels","highlight","detail"),
 ("The inverter and wiring require proper professional installation.", "inverter","highlight","detail"),
-("Solar still needs a safe backup when sunlight fades.", "battery","highlight","reveal"),
+("Solar needs backup after sunset.", "battery","highlight","reveal"),
 ("Together these parts turn daylight into useful household electricity.", "house","highlight","reveal"),
 ]
+from .rainwater_pack import RAINWATER, DETAILS
 PACKS = {
+    "rainwater": {"title":"How a Home Harvests Rainwater",
+                  "aliases":("rainwater","rain harvesting"),"beats":RAINWATER,"details":DETAILS},
     "water_distribution": {
         "title":"How a Water Tower Supplies a Neighbourhood",
         "aliases":("water tower","water distribution","water supply"),
@@ -85,15 +88,28 @@ def resolve_topic(topic: str) -> str:
                      ", ".join(sorted(PACKS)) + ". Register a scene/action pack first.")
 
 
-def build_story(topic: str, duration: int = 90) -> dict:
-    if duration not in DURATIONS:
-        raise ValueError(f"Choose one of {DURATIONS} seconds")
+def build_story(topic: str, duration: int = 90, *, fps=24, profile="draft",
+                audience="general", complexity="standard") -> dict:
+    if type(duration) is not int or not 40<=duration<=240:
+        raise ValueError("Built-in scripts cover 40-240 seconds; author a manual storyboard for longer timelines")
     ident = resolve_topic(topic)
     pack = PACKS[ident]
     steps = pack["beats"]
-    count = min(24,max(10,round(duration/5)))
+    if duration>120:
+        from .topic_details import SOLAR_DETAILS,WATER_DETAILS
+        details=pack.get("details") or (SOLAR_DETAILS if ident=="solar_home" else WATER_DETAILS)
+        steps=[item for step,detail in zip(steps,details)
+               for item in (step,(detail,*step[1:]))]
+    count = min(len(steps),max(10,round(duration/5)))
     # Even sampling retains introduction and conclusion for shorter versions.
     indices = [round(i*(len(steps)-1)/(count-1)) for i in range(count)]
+    # Explanatory cutaways are structural narrative events, never optional
+    # samples. Keep them even when shortening a pack.
+    mandatory={i for i,s in enumerate(steps) if s[2]=="cutaway"}
+    for required in sorted(mandatory-set(indices)):
+        candidate=min((i for i in indices[1:-1] if i not in mandatory),key=lambda i:abs(i-required))
+        indices[indices.index(candidate)]=required
+    indices.sort()
     if len(set(indices)) != len(indices):
         raise AssertionError("topic pack does not contain enough unique steps")
     beats=[]
@@ -105,10 +121,13 @@ def build_story(topic: str, duration: int = 90) -> dict:
             "id":f"beat_{i+1:02d}", "start":start, "end":end,
             "problem":line, "solution":f"Visual demonstration: {action} {target}",
             "narration":line, "camera":camera,
-            "actions":[{"type":action,"target":target}]
+            "actions":[{"type":action,"target":target}],
+            "scene_id":ident,"required_assets":[target],"transition":"smooth",
+            "sfx":[],"validation_rules":["subject_visible","portrait_safe"]
         })
     return validate_story_v2({
         "version":2, "title":pack["title"], "duration":duration,
-        "fps":24, "resolution":[720,1280],
+        "fps":fps, "resolution":{"preview":[360,640],"draft":[720,1280],"final":[1080,1920]}[profile],
+        "audience":audience,"complexity":complexity,
         "scene_template":ident, "beats":beats
     })

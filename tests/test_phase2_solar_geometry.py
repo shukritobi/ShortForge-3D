@@ -38,7 +38,10 @@ def test_solar_panels_are_attached_not_level_or_inverse_sloped():
     ast.parse(s)
     assert 'tilt=-ROOF_PITCH' in s  # left plane
     assert 'tilt=ROOF_PITCH' in s   # right plane and PV modules
-    assert 'roof_height(local_x)+.18' in s
+    # Roof top .085; rail spans .085..140; panel spans .140..195.
+    assert math.isclose(.1125-.055/2,.17/2,abs_tol=1e-9)
+    assert math.isclose(.1675-.055/2,.1125+.055/2,abs_tol=1e-9)
+    assert 'offset=.1675' in s
     assert "pv_mount_" in s
     assert "pv_cell_line_u_" in s
     assert "pv_cell_line_v_" in s

@@ -3,6 +3,8 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .venv/
+.venv-tts/
+*.egg-info/
 .env
 node_modules/
 output/

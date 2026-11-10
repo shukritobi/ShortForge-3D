@@ -7,12 +7,14 @@
     720,
     1280
   ],
+  "audience": "general",
+  "complexity": "standard",
   "scene_template": "solar_home",
   "beats": [
     {
       "id": "beat_01",
-      "start": 0,
-      "end": 7.5,
+      "start": 0.0,
+      "end": 5.0,
       "problem": "Your roof receives sunlight through much of the daytime.",
       "solution": "Visual demonstration: appear sun",
       "narration": "Your roof receives sunlight through much of the daytime.",
@@ -22,27 +24,72 @@
           "type": "appear",
           "target": "sun"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "sun"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
       "id": "beat_02",
-      "start": 7.5,
-      "end": 15,
-      "problem": "But sunlight alone cannot run the lights inside your home.",
+      "start": 5.0,
+      "end": 10.0,
+      "problem": "Photovoltaic modules convert light, rather than collecting heat to boil water.",
+      "solution": "Visual demonstration: appear sun",
+      "narration": "Photovoltaic modules convert light, rather than collecting heat to boil water.",
+      "camera": "establish",
+      "actions": [
+        {
+          "type": "appear",
+          "target": "sun"
+        }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "sun"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_03",
+      "start": 10.0,
+      "end": 15.0,
+      "problem": "The electrical equipment must match the needs of the building.",
       "solution": "Visual demonstration: appear house",
-      "narration": "But sunlight alone cannot run the lights inside your home.",
+      "narration": "The electrical equipment must match the needs of the building.",
       "camera": "detail",
       "actions": [
         {
           "type": "appear",
           "target": "house"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "house"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_03",
-      "start": 15,
-      "end": 22.5,
+      "id": "beat_04",
+      "start": 15.0,
+      "end": 20.0,
       "problem": "So you mount solar panels across a suitable roof surface.",
       "solution": "Visual demonstration: assemble panels",
       "narration": "So you mount solar panels across a suitable roof surface.",
@@ -52,27 +99,72 @@
           "type": "assemble",
           "target": "panels"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "panels"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_04",
-      "start": 22.5,
-      "end": 30,
-      "problem": "Each panel contains many small photovoltaic cells.",
+      "id": "beat_05",
+      "start": 20.0,
+      "end": 25.0,
+      "problem": "Rails spread the panel loads into suitable roof attachment points.",
+      "solution": "Visual demonstration: assemble panels",
+      "narration": "Rails spread the panel loads into suitable roof attachment points.",
+      "camera": "overhead",
+      "actions": [
+        {
+          "type": "assemble",
+          "target": "panels"
+        }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "panels"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_06",
+      "start": 25.0,
+      "end": 30.0,
+      "problem": "Cells connect together inside a weather resistant protective module.",
       "solution": "Visual demonstration: highlight panels",
-      "narration": "Each panel contains many small photovoltaic cells.",
+      "narration": "Cells connect together inside a weather resistant protective module.",
       "camera": "detail",
       "actions": [
         {
           "type": "highlight",
           "target": "panels"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "panels"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_05",
-      "start": 30,
-      "end": 37.5,
+      "id": "beat_07",
+      "start": 30.0,
+      "end": 35.0,
       "problem": "Light arriving at the cells can drive an electric current.",
       "solution": "Visual demonstration: flow sun",
       "narration": "Light arriving at the cells can drive an electric current.",
@@ -82,27 +174,72 @@
           "type": "flow",
           "target": "sun"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "sun"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_06",
-      "start": 37.5,
-      "end": 45,
-      "problem": "The panels produce direct current, often called DC.",
+      "id": "beat_08",
+      "start": 35.0,
+      "end": 40.0,
+      "problem": "More light generally allows the array to generate more current.",
+      "solution": "Visual demonstration: flow sun",
+      "narration": "More light generally allows the array to generate more current.",
+      "camera": "follow",
+      "actions": [
+        {
+          "type": "flow",
+          "target": "sun"
+        }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "sun"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_09",
+      "start": 40.0,
+      "end": 45.0,
+      "problem": "DC keeps the same polarity at the positive and negative terminals.",
       "solution": "Visual demonstration: pulse panels",
-      "narration": "The panels produce direct current, often called DC.",
+      "narration": "DC keeps the same polarity at the positive and negative terminals.",
       "camera": "detail",
       "actions": [
         {
           "type": "pulse",
           "target": "panels"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "panels"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_07",
-      "start": 45,
-      "end": 52.5,
+      "id": "beat_10",
+      "start": 45.0,
+      "end": 50.0,
       "problem": "Household appliances usually expect alternating current, or AC.",
       "solution": "Visual demonstration: highlight house",
       "narration": "Household appliances usually expect alternating current, or AC.",
@@ -112,27 +249,72 @@
           "type": "highlight",
           "target": "house"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "house"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_08",
-      "start": 52.5,
-      "end": 60,
-      "problem": "So the panel wiring feeds electricity toward an inverter.",
+      "id": "beat_11",
+      "start": 50.0,
+      "end": 55.0,
+      "problem": "AC changes direction repeatedly in the household electrical supply.",
+      "solution": "Visual demonstration: highlight house",
+      "narration": "AC changes direction repeatedly in the household electrical supply.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "house"
+        }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "house"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_12",
+      "start": 55.0,
+      "end": 60.0,
+      "problem": "Outdoor cables need protection from sunlight, moisture and physical damage.",
       "solution": "Visual demonstration: appear inverter",
-      "narration": "So the panel wiring feeds electricity toward an inverter.",
+      "narration": "Outdoor cables need protection from sunlight, moisture and physical damage.",
       "camera": "follow",
       "actions": [
         {
           "type": "appear",
           "target": "inverter"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "inverter"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_09",
-      "start": 60,
-      "end": 67.5,
+      "id": "beat_13",
+      "start": 60.0,
+      "end": 65.0,
       "problem": "The inverter converts DC into usable alternating current.",
       "solution": "Visual demonstration: pulse inverter",
       "narration": "The inverter converts DC into usable alternating current.",
@@ -142,27 +324,72 @@
           "type": "pulse",
           "target": "inverter"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "inverter"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_10",
-      "start": 67.5,
-      "end": 75,
-      "problem": "Safety switches and protective devices guard the electrical circuits.",
+      "id": "beat_14",
+      "start": 65.0,
+      "end": 70.0,
+      "problem": "Power electronics control the conversion while tracking the available solar power.",
+      "solution": "Visual demonstration: pulse inverter",
+      "narration": "Power electronics control the conversion while tracking the available solar power.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "pulse",
+          "target": "inverter"
+        }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "inverter"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_15",
+      "start": 70.0,
+      "end": 75.0,
+      "problem": "An isolator provides a way to disconnect equipment for maintenance.",
       "solution": "Visual demonstration: highlight inverter",
-      "narration": "Safety switches and protective devices guard the electrical circuits.",
+      "narration": "An isolator provides a way to disconnect equipment for maintenance.",
       "camera": "detail",
       "actions": [
         {
           "type": "highlight",
           "target": "inverter"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "inverter"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_11",
-      "start": 75,
-      "end": 82.5,
+      "id": "beat_16",
+      "start": 75.0,
+      "end": 80.0,
       "problem": "That output can power lights, fans and other household loads.",
       "solution": "Visual demonstration: appear lights",
       "narration": "That output can power lights, fans and other household loads.",
@@ -172,27 +399,72 @@
           "type": "appear",
           "target": "lights"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "lights"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_12",
-      "start": 82.5,
-      "end": 90,
-      "problem": "On a bright day, production may exceed what you use.",
+      "id": "beat_17",
+      "start": 80.0,
+      "end": 85.0,
+      "problem": "The home uses available generation before drawing the remaining demand elsewhere.",
+      "solution": "Visual demonstration: appear lights",
+      "narration": "The home uses available generation before drawing the remaining demand elsewhere.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "appear",
+          "target": "lights"
+        }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "lights"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_18",
+      "start": 85.0,
+      "end": 90.0,
+      "problem": "Generation and consumption change independently throughout the course of a day.",
       "solution": "Visual demonstration: pulse meter",
-      "narration": "On a bright day, production may exceed what you use.",
+      "narration": "Generation and consumption change independently throughout the course of a day.",
       "camera": "detail",
       "actions": [
         {
           "type": "pulse",
           "target": "meter"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "meter"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_13",
-      "start": 90,
-      "end": 97.5,
+      "id": "beat_19",
+      "start": 90.0,
+      "end": 95.0,
       "problem": "Some systems export surplus electricity to the local grid.",
       "solution": "Visual demonstration: flow grid",
       "narration": "Some systems export surplus electricity to the local grid.",
@@ -202,12 +474,22 @@
           "type": "flow",
           "target": "grid"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "grid"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_14",
-      "start": 97.5,
-      "end": 105,
+      "id": "beat_20",
+      "start": 95.0,
+      "end": 100.0,
       "problem": "Other systems send part of that energy into a battery.",
       "solution": "Visual demonstration: appear battery",
       "narration": "Other systems send part of that energy into a battery.",
@@ -217,12 +499,47 @@
           "type": "appear",
           "target": "battery"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "battery"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_15",
-      "start": 105,
-      "end": 112.5,
+      "id": "beat_21",
+      "start": 100.0,
+      "end": 105.0,
+      "problem": "A battery requires a compatible controller and suitable protective devices.",
+      "solution": "Visual demonstration: appear battery",
+      "narration": "A battery requires a compatible controller and suitable protective devices.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "appear",
+          "target": "battery"
+        }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "battery"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_22",
+      "start": 105.0,
+      "end": 110.0,
       "problem": "A compatible battery stores energy for use at another time.",
       "solution": "Visual demonstration: pulse battery",
       "narration": "A compatible battery stores energy for use at another time.",
@@ -232,12 +549,22 @@
           "type": "pulse",
           "target": "battery"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "battery"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_16",
-      "start": 112.5,
-      "end": 120,
+      "id": "beat_23",
+      "start": 110.0,
+      "end": 115.0,
       "problem": "When clouds arrive, the panels generate less electricity.",
       "solution": "Visual demonstration: highlight sun",
       "narration": "When clouds arrive, the panels generate less electricity.",
@@ -247,12 +574,47 @@
           "type": "highlight",
           "target": "sun"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "sun"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_17",
-      "start": 120,
-      "end": 127.5,
+      "id": "beat_24",
+      "start": 115.0,
+      "end": 120.0,
+      "problem": "Even a small shaded area can affect the output of connected modules.",
+      "solution": "Visual demonstration: highlight sun",
+      "narration": "Even a small shaded area can affect the output of connected modules.",
+      "camera": "establish",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "sun"
+        }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "sun"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_25",
+      "start": 120.0,
+      "end": 125.0,
       "problem": "The home may then draw from the battery or grid.",
       "solution": "Visual demonstration: highlight grid",
       "narration": "The home may then draw from the battery or grid.",
@@ -262,12 +624,22 @@
           "type": "highlight",
           "target": "grid"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "grid"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_18",
-      "start": 127.5,
-      "end": 135,
+      "id": "beat_26",
+      "start": 125.0,
+      "end": 130.0,
       "problem": "A meter measures electricity flowing between home and network.",
       "solution": "Visual demonstration: appear meter",
       "narration": "A meter measures electricity flowing between home and network.",
@@ -277,12 +649,47 @@
           "type": "appear",
           "target": "meter"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "meter"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_19",
-      "start": 135,
-      "end": 142.5,
+      "id": "beat_27",
+      "start": 130.0,
+      "end": 135.0,
+      "problem": "The meter records imported and exported energy over time.",
+      "solution": "Visual demonstration: appear meter",
+      "narration": "The meter records imported and exported energy over time.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "appear",
+          "target": "meter"
+        }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "meter"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_28",
+      "start": 135.0,
+      "end": 140.0,
       "problem": "Monitoring software tracks generation and household consumption.",
       "solution": "Visual demonstration: pulse meter",
       "narration": "Monitoring software tracks generation and household consumption.",
@@ -292,12 +699,22 @@
           "type": "pulse",
           "target": "meter"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "meter"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_20",
-      "start": 142.5,
-      "end": 150,
+      "id": "beat_29",
+      "start": 140.0,
+      "end": 145.0,
       "problem": "Panel angle and shade strongly influence the daily output.",
       "solution": "Visual demonstration: highlight panels",
       "narration": "Panel angle and shade strongly influence the daily output.",
@@ -307,27 +724,72 @@
           "type": "highlight",
           "target": "panels"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "panels"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_21",
-      "start": 150,
-      "end": 157.5,
-      "problem": "Installers also allow for heat, weather and roof loading.",
+      "id": "beat_30",
+      "start": 145.0,
+      "end": 150.0,
+      "problem": "The best orientation depends on the location and the surrounding obstructions.",
       "solution": "Visual demonstration: highlight panels",
-      "narration": "Installers also allow for heat, weather and roof loading.",
+      "narration": "The best orientation depends on the location and the surrounding obstructions.",
+      "camera": "overhead",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "panels"
+        }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "panels"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_31",
+      "start": 150.0,
+      "end": 155.0,
+      "problem": "Mounts must withstand wind and weather.",
+      "solution": "Visual demonstration: highlight panels",
+      "narration": "Mounts must withstand wind and weather.",
       "camera": "detail",
       "actions": [
         {
           "type": "highlight",
           "target": "panels"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "panels"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_22",
-      "start": 157.5,
-      "end": 165,
+      "id": "beat_32",
+      "start": 155.0,
+      "end": 160.0,
       "problem": "The inverter and wiring require proper professional installation.",
       "solution": "Visual demonstration: highlight inverter",
       "narration": "The inverter and wiring require proper professional installation.",
@@ -337,27 +799,72 @@
           "type": "highlight",
           "target": "inverter"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "inverter"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_23",
-      "start": 165,
-      "end": 172.5,
-      "problem": "Solar still needs a safe backup when sunlight fades.",
+      "id": "beat_33",
+      "start": 160.0,
+      "end": 165.0,
+      "problem": "Electrical protection and earthing must suit the complete installation.",
+      "solution": "Visual demonstration: highlight inverter",
+      "narration": "Electrical protection and earthing must suit the complete installation.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "inverter"
+        }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "inverter"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_34",
+      "start": 165.0,
+      "end": 170.0,
+      "problem": "Solar needs backup after sunset.",
       "solution": "Visual demonstration: highlight battery",
-      "narration": "Solar still needs a safe backup when sunlight fades.",
+      "narration": "Solar needs backup after sunset.",
       "camera": "reveal",
       "actions": [
         {
           "type": "highlight",
           "target": "battery"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "battery"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     },
     {
-      "id": "beat_24",
-      "start": 172.5,
-      "end": 180,
+      "id": "beat_35",
+      "start": 170.0,
+      "end": 175.0,
       "problem": "Together these parts turn daylight into useful household electricity.",
       "solution": "Visual demonstration: highlight house",
       "narration": "Together these parts turn daylight into useful household electricity.",
@@ -367,6 +874,41 @@
           "type": "highlight",
           "target": "house"
         }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "house"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_36",
+      "start": 175.0,
+      "end": 180.0,
+      "problem": "The panels, inverter and controls work together as one connected system.",
+      "solution": "Visual demonstration: highlight house",
+      "narration": "The panels, inverter and controls work together as one connected system.",
+      "camera": "reveal",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "house"
+        }
+      ],
+      "scene_id": "solar_home",
+      "required_assets": [
+        "house"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
       ]
     }
   ]

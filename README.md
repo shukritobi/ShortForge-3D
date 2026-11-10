@@ -206,3 +206,9 @@ Qwen3-TTS or Kokoro environment enables the actual narrated Short. A persistent 
 agent, batch rendering and YouTube approval/upload workflow are later milestones.
 
 **Publishing is deliberately disabled in Phase 1.**
+# Local Studio and production verification
+
+Start `scripts/ShortForge-Studio.bat` for the local review dashboard, or
+`scripts/ShortForge-Verify.bat` for tests and real previews of all three topics.
+See [production workflow](docs/PRODUCTION.md), [acceptance evidence](docs/ACCEPTANCE.md)
+and [work handoff](docs/WORK_HANDOFF.md). Publishing remains disabled.

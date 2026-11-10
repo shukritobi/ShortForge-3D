@@ -91,8 +91,31 @@ def create_audio(story: dict, output: str | Path, *, provider="qwen",
     ]
     if model_id:
         cmd += ["--model-id", model_id]
+    # Share immutable text/voice samples across projects and durations without
+    # making tests or external output folders write into the user's cache.
+    shared=ROOT/"output"/"voice_cache" if out.is_relative_to(ROOT/"output") else None
+    if shared:
+        from scripts.tts_generate import cache_key
+        selected_model=model_id or ("Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice" if provider=="qwen" else "hexgrad/Kokoro-82M")
+        shared.mkdir(parents=True,exist_ok=True)
+        keys=[cache_key(b,selected_model,voice.casefold() if provider=="qwen" else voice,provider) for b in story["beats"]]
+        for index,key in enumerate(keys):
+            raw=beats_dir/f"beat_{index:02d}_raw.wav"
+            meta=beats_dir/f"beat_{index:02d}_cache.json"
+            cached=shared/(key+".wav")
+            if cached.is_file() and (shared/(key+".json")).is_file():
+                if not meta.is_file() or json.loads(meta.read_text()).get("key")!=key:
+                    shutil.copy2(cached,raw)
+                    shutil.copy2(shared/(key+".json"),meta)
     # Generate and cache all beats in one inference process: prevents 8x model loads.
     subprocess.run(cmd, check=True, cwd=str(ROOT))
+    if shared:
+        for index,key in enumerate(keys):
+            raw=beats_dir/f"beat_{index:02d}_raw.wav"
+            meta=beats_dir/f"beat_{index:02d}_cache.json"
+            if raw.is_file() and meta.is_file() and json.loads(meta.read_text()).get("key")==key:
+                shutil.copy2(raw,shared/(key+".wav"))
+                shutil.copy2(meta,shared/(key+".json"))
 
     # Validate the *whole* narration first; always produce a useful timing
     # report even when an individual beat fails to fit. CPU synthesis latency
@@ -106,7 +129,8 @@ def create_audio(story: dict, output: str | Path, *, provider="qwen",
         # Avoid unnatural slow speech in long scenes: speak at native speed,
         # then let the scene breathe with silence at its tail.
         tempo = max(1.0, natural_tempo) if natural_tempo is not None else None
-        ok = tempo is not None and tempo <= 1.7
+        limit=1.35 if story.get("version")==2 else 1.7
+        ok = tempo is not None and tempo <= limit
         rows.append({
             "beat": beat["id"], "start_sec": beat["start"],
             "end_sec": beat["end"], "word_count": len(beat["narration"].split()),
@@ -123,7 +147,7 @@ def create_audio(story: dict, output: str | Path, *, provider="qwen",
         "beats": rows, "failed_count": len(problems),
         "total_generated_speech_sec": round(sum(x["spoken_audio_sec"] or 0 for x in rows),3),
         "total_storyboard_sec": story["duration"],
-        "message": "Audio length is NOT synthesis computation time. Do not compress speech above 1.7x.",
+        "message": f"Audio length is not synthesis computation time. Maximum speed is {limit}x.",
     }
     (out / "timing_report.json").write_text(json.dumps(timing_report,indent=2)+"\n",encoding="utf-8")
     if problems:
@@ -131,7 +155,7 @@ def create_audio(story: dict, output: str | Path, *, provider="qwen",
         raise RuntimeError(
             f"Beat {first['beat']} spoken audio {first['spoken_audio_sec']}s "
             f"cannot fit {first['target_sec']}s (tempo {first['speed_adjustment']}). "
-            f"See {out / 'timing_report.json'} and raw voice samples before rendering 960 frames."
+            f"See {out / 'timing_report.json'} and raw voice samples before rendering."
         )
 
     adjusted = []

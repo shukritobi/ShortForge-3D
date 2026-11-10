@@ -19,6 +19,7 @@ jobs:
       - run: python -m shortforge.cli validate examples/water_tower_90s_v2.json
       - run: python -m shortforge.cli validate examples/solar_home_120s_v2.json
       - run: python -m shortforge.cli validate examples/solar_home_180s_v2.json
+      - run: python -m shortforge.cli validate examples/rainwater_90s_v2.json
       - run: python -m shortforge.cli plan --engine library --topic "solar panels" --duration 90 --output output/test_solar_90s.json
       - run: python -m shortforge.cli run examples/solar_home_120s_v2.json --dry-run --out output/ci_preview
 

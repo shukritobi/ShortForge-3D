@@ -36,7 +36,7 @@ def render(storyboard: Path, output: Path, *, blender="blender", preview_frame=N
         raise ValueError(f"Expected 2-6 distinct review frames between 1 and {frame_total}")
     renderer = (ROOT/"scripts"/"blender_v2.py"
                 if story["version"] == 2 else BLENDER_SCRIPT)
-    command = [executable,"-b","--python",str(renderer),
+    command = [executable,"-b","--python-exit-code","1","--python",str(renderer),
                "--","--storyboard",str(storyboard.resolve()),"--out",str(output.resolve())]
     if preview_frame is not None:
         command.extend(["--preview-frame",str(preview_frame)])
@@ -223,11 +223,12 @@ def main(argv=None):
                          voice=args.voice or ("Ryan" if args.tts=="qwen" else "af_heart"),
                          model_id=args.model_id,python=args.tts_python,
                          ffmpeg=args.ffmpeg,ffprobe=args.ffprobe)
-        print("Audio ready. Starting 960-frame Blender render.",flush=True)
+        print(f"Audio ready. Starting {story['duration']*story['fps']}-frame Blender render.",flush=True)
         render(args.storyboard,args.out,blender=args.blender)
         target=compose(story,args.out,ffmpeg=args.ffmpeg)
         report=inspect_video(target,ffprobe=args.ffprobe,
-                             expected_duration=story["duration"])
+                             expected_duration=story["duration"],expected_fps=story["fps"],
+                             expected_resolution=story["resolution"])
         report["sha256"]=hashlib.sha256(target.read_bytes()).hexdigest()
         report["narration_provider"]=args.tts
         (args.out/"quality.json").write_text(json.dumps(report,indent=2)+"\n",encoding="utf-8")
