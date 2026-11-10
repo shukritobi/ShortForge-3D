@@ -42,11 +42,34 @@ def test_recovery_rejects_outside_local_run(tmp_path):
     assert result["status"]=="failed"
 
 
-def test_missing_drive_is_explicit_error(tmp_path):
+def test_missing_drive_is_explicit_error(tmp_path, monkeypatch):
+    # The actual Windows workstation has a mounted G: Drive. Explicitly
+    # isolate drive discovery so CI behaves the same as a developer PC
+    # and this test never uploads its synthetic manifest to a real Drive.
     mod=review_module()
+    monkeypatch.setattr(
+        mod, "resolve_drive",
+        lambda path: (None, [str(path)]),
+    )
     run=tmp_path/"review"
     run.mkdir()
     (run/"run_manifest.json").write_text("{}")
     result=mod.sync_bundle(run,tmp_path/"missing")
     assert result["status"]=="sync_failed"
     assert result["local_run"] == str(run)
+
+
+def test_fallback_resolver_can_sync_to_valid_workspace(tmp_path, monkeypatch):
+    mod=review_module()
+    real_drive=tmp_path/"real_mount"
+    (real_drive/"outbox").mkdir(parents=True)
+    monkeypatch.setattr(
+        mod, "resolve_drive",
+        lambda path: (real_drive.resolve(), [str(path),str(real_drive)]),
+    )
+    run=tmp_path/"review"
+    run.mkdir()
+    (run/"run_manifest.json").write_text('{"status":"needs_review"}')
+    result=mod.sync_bundle(run,tmp_path/"incorrect_drive")
+    assert result["status"]=="synced"
+    assert (real_drive/"outbox"/"latest"/"run_manifest.json").exists()
