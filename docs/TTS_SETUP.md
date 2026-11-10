@@ -79,3 +79,27 @@ This emits a 40-second muted-audio MP4. It is NOT a finished narrated Short.
 - Word-level captions currently use approximate phrase timing; future
   Faster-Whisper forced alignment is planned.
 - Save an immutable voice setting manifest for repeatable future renders.
+
+
+## Verify the TTS Python environment actually sees the RTX GPU
+
+The main PC agent's `ready_full` status checks installed packages, but not that
+Qwen can accelerate on NVIDIA until this extra check is run:
+
+```powershell
+.\.venv-tts\Scripts\python.exe -c "import torch; print('torch:', torch.__version__); print('CUDA:', torch.cuda.is_available()); print('GPU:', torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU-only')"
+```
+
+If CUDA reports False, use the **current official PyTorch Windows pip CUDA
+installer** at https://pytorch.org/get-started/locally/ with your Windows
+Python version, and use the corresponding CUDA-enabled torch/torchaudio
+packages in `.venv-tts` only. Do not overwrite ShortForge's `.venv`.
+`python scripts/pc_agent.py doctor` will now also report `tts.torch`.
+
+Before running all 960 Blender frames, test only Qwen narration:
+
+```powershell
+.\.venv\Scripts\python.exe -m shortforge.cli audio examples/water_tower_40s.json --tts qwen --voice Ryan --out output/water_tower
+```
+
+This catches voice/model and beat-timing failures before any expensive 3D work.

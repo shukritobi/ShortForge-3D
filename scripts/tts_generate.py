@@ -14,6 +14,17 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from shortforge.contract import load_storyboard
 
 
+def resolve_voice(voice, supported):
+    """Qwen reports lowercase speaker names; accept display-case user choices."""
+    if not supported:
+        return voice
+    by_casefold = {name.casefold(): name for name in supported}
+    canonical = by_casefold.get(voice.casefold())
+    if not canonical:
+        raise ValueError(f"Voice {voice!r} unavailable. Model speakers: {supported}")
+    return canonical
+
+
 def render_qwen(story, output, model_id, voice):
     import torch
     import soundfile as sf
@@ -29,8 +40,7 @@ def render_qwen(story, output, model_id, voice):
         attn_implementation="sdpa",  # no FlashAttention build needed on Windows
     )
     speakers = model.get_supported_speakers()
-    if voice not in speakers:
-        raise ValueError(f"Voice {voice!r} unavailable. Model speakers: {speakers}")
+    voice = resolve_voice(voice, speakers)
     for index, beat in enumerate(story["beats"]):
         print(f"Synthesizing {index+1}/{len(story['beats'])}: {beat['id']}", flush=True)
         wavs, sr = model.generate_custom_voice(

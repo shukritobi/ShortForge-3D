@@ -136,6 +136,23 @@ def doctor(blender_override: str | None = None, voice: str | None = None) -> dic
                 tts["kokoro_installed"] = bool(flags["kokoro"])
             except (ValueError, KeyError, IndexError):
                 pass
+    # Import torch separately from the main environment so a CPU-only wheel
+    # cannot masquerade as GPU-ready just because qwen_tts is installed.
+    tts["torch"] = {"detected": False, "cuda_available": False}
+    if tts_exe.is_file():
+        torch_probe = probe([
+            str(tts_exe), "-c",
+            "import torch,json;"
+            "print(json.dumps({'version':torch.__version__,"
+            "'cuda_available':torch.cuda.is_available(),"
+            "'gpu_name':torch.cuda.get_device_name(0) if torch.cuda.is_available() else None}))"
+        ], 35)
+        if torch_probe.get("ok"):
+            try:
+                data = json.loads(torch_probe["stdout_tail"].strip().splitlines()[-1])
+                tts["torch"] = {"detected": True, **data}
+            except (ValueError, KeyError, IndexError):
+                pass
     result["tts"] = tts
     tools = result["tools"]
     result["ready_preview"] = bool(tools["blender"].get("headless_ok"))
@@ -153,6 +170,8 @@ def doctor(blender_override: str | None = None, voice: str | None = None) -> dic
         hints.append("FFmpeg/ffprobe not found. Add their bin directory to PATH before full rendering.")
     if not tts["qwen_installed"] and not tts["kokoro_installed"]:
         hints.append("Quality narration not installed. See docs/TTS_SETUP.md for Qwen3-TTS or Kokoro.")
+    if tts["qwen_installed"] and not tts["torch"].get("cuda_available", False):
+        hints.append("Qwen is installed but CUDA was not detected in .venv-tts. Check PyTorch CUDA wheel before generating a full voiced video.")
     elif tts["qwen_installed"]:
         hints.append("Qwen3-TTS is installed; first model download will require internet access.")
     elif tts["kokoro_installed"]:
