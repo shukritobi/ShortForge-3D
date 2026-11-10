@@ -8,6 +8,26 @@ import math
 
 import bpy
 from mathutils import Vector
+from shortforge.scene_math import (
+    ROOF_RUN, ROOF_RISE, ROOF_EAVE, ROOF_RIDGE, ROOF_PITCH,
+    roof_height, roof_surface_point,
+)
+
+def gable(name, x, y, mat):
+    """Fill the front and rear triangular walls beneath a pitched roof."""
+    v=[(x-1.5,y-1.35,2.8), (x+1.5,y-1.35,2.8),
+       (x,y-1.35,ROOF_RIDGE-.05),
+       (x-1.5,y+1.35,2.8), (x+1.5,y+1.35,2.8),
+       (x,y+1.35,ROOF_RIDGE-.05)]
+    faces=[(0,1,2),(3,5,4),(0,3,4,1),(0,2,5,3),(1,4,5,2)]
+    mesh=bpy.data.meshes.new("sf2_gable")
+    mesh.from_pydata(v,[],faces)
+    mesh.update()
+    obj=bpy.data.objects.new("sf_"+name,mesh)
+    bpy.context.collection.objects.link(obj)
+    mesh.materials.append(mat)
+    return obj
+
 
 
 def material(name, rgb, *, metallic=0.0, roughness=0.6, emission=0.0):
@@ -83,6 +103,7 @@ class Kit:
     def __init__(self):
         self.groups={}
         self.paths={}
+        self.focus={}
         self.cutaway_covers=[]
         self.colors={
             "ground": material("grass",(.32,.49,.31)),
@@ -133,8 +154,14 @@ class Kit:
         walls=self.colors["walls"] if tint is None else material(name+"walls",tint)
         a=[
             cube(name+"_walls",(x,y,1.4),(3.0,2.7,2.8),walls),
-            cube(name+"_roofL",(x-.82,y,3.16),(2.1,3.1,.18),self.colors["roof"],tilt=.43),
-            cube(name+"_roofR",(x+.82,y,3.16),(2.1,3.1,.18),self.colors["roof"],tilt=-.43),
+            # Left slope rises to ridge; right slope descends to the eave.
+            # This corrects the inverted valley-roof geometry in the first preview.
+            cube(name+"_roofL",(x-.84,y,3.34),(1.84,3.10,.17),
+                 self.colors["roof"],tilt=-ROOF_PITCH),
+            cube(name+"_roofR",(x+.84,y,3.34),(1.84,3.10,.17),
+                 self.colors["roof"],tilt=ROOF_PITCH),
+            cube(name+"_ridge",(x,y,ROOF_RIDGE+.02),(.13,3.16,.10),self.colors["roof"]),
+            gable(name+"_gable",x,y,walls),
             cube(name+"_door",(x-.55,y-1.36,.95),(.65,.06,1.7),self.colors["dark"]),
             cube(name+"_window",(x+.60,y-1.38,1.8),(.75,.08,.78),self.colors["glass"]),
         ]
@@ -176,28 +203,110 @@ class Kit:
         self.paths["faucet"]=[(-11,1,1.4),(-11,1.6,1.4),(-11,1.6,1.05)]
 
     def solar(self):
+        """One electrically connected and mechanically plausible rooftop system.
+
+        All coordinates are metres and local to the main house centre.
+        Visible model parts stay registered to the storyboard's semantic targets.
+        """
         self.scene_ground()
         self.put("house",*self.house("solar_main",0,1.0))
         for i,(dx,dy) in enumerate(((-8,5),(-11,2),(9,6))):
             self.put("house",*self.house(f"nearby_{i}",dx,dy,
                          tint=(.79,.78,.68+.025*i)))
-        panels=[]
-        for j in range(2):
-            for i in range(3):
-                panels.append(cube(f"solar_panel_{j}_{i}",(-1.05+i*.95,1-.65+j*.95,3.68),
-                                   (.84,.75,.065),self.colors["panels"],tilt=-.35))
-        self.put("panels",*panels)
-        self.put("sun",sphere("sun_ball",(-6,4,10),1.25,self.colors["sun"]))
-        self.put("inverter",cube("inverter",(2.4,-.38,1.8),(.68,.27,1.05),self.colors["white"]))
-        self.put("battery",cube("battery",(3.55,-.4,.7),(1.0,.8,1.3),self.colors["battery"]))
-        self.put("meter",cube("energy_meter",(1.38,-.41,1.55),(.4,.22,.55),self.colors["dark"]))
-        self.put("grid",pipe("power_pole",[(9,-3,0),(9,-3,6)],self.colors["dark"],.16),
-                 pipe("grid_cable",[(9,-3,5.65),(1.4,-.4,2.4)],self.colors["cable"],.06))
-        self.put("lights",sphere("home_light",(0,-.4,2.3),.19,self.colors["sun"]))
-        self.paths["sun"]=[(-6,4,10),(-1,1,4)]
-        self.paths["panels"]=[(-1,1,4),(2.4,-.38,2.5)]
-        self.paths["grid"]=[(2.4,-.38,2.5),(9,-3,5.65)]
-        self.paths["battery"]=[(2.4,-.38,1.8),(3.55,-.4,.7)]
+
+        # Two columns by three rows, flush with the right gable roof.
+        # Pitched panels and concealed rails have the same roof angle.
+        panel_assets=[]
+        for col,local_x in enumerate((.48,1.17)):
+            for row,local_y in enumerate((-.82,0,.82)):
+                centre_y=1.0+local_y
+                centre_z=roof_height(local_x)+.18
+                panel_assets.append(cube(
+                    f"pv_{col}_{row}",(local_x,centre_y,centre_z),
+                    (.69,.72,.055),self.colors["panels"],tilt=ROOF_PITCH))
+                # Two thin silver standoff rails on the upper roof surface.
+                for du in (-.20,.20):
+                    px,p_y,p_z=roof_surface_point(local_x,centre_y,du,0,offset=.105)
+                    panel_assets.append(cube(
+                        f"pv_mount_{col}_{row}_{int(du*100)}",(px,p_y,p_z),
+                        (.065,.69,.055),self.colors["dark"],tilt=ROOF_PITCH))
+                # Subtle cell divisions, following the physical roof normal.
+                for u in (-.12,.12):
+                    p0=roof_surface_point(local_x,centre_y,u,-.34,offset=.216)
+                    p1=roof_surface_point(local_x,centre_y,u,.34,offset=.216)
+                    panel_assets.append(pipe(f"pv_cell_line_u_{col}_{row}_{int(u*100)}",
+                                             [p0,p1],self.colors["glass"],.006))
+                for v in (-.16,.16):
+                    p0=roof_surface_point(local_x,centre_y,-.30,v,offset=.216)
+                    p1=roof_surface_point(local_x,centre_y,.30,v,offset=.216)
+                    panel_assets.append(pipe(f"pv_cell_line_v_{col}_{row}_{int(v*100)}",
+                                             [p0,p1],self.colors["glass"],.006))
+        self.put("panels",*panel_assets)
+
+        # Sun is a small environmental cue, not a giant disc behind the roof.
+        self.put("sun",sphere("sun_ball",(-5.3,4.2,9.2),.65,self.colors["sun"]))
+
+        # Distinct visible wire routes: DC roof -> wall-mounted inverter,
+        # AC inverter -> meter -> home, and optional battery / grid interfaces.
+        self.put("inverter",
+                 cube("inverter",(1.64,-.20,1.62),(.28,.70,1.03),
+                      self.colors["white"]),
+                 cube("inverter_status",(1.792,-.40,1.82),(.018,.20,.16),
+                      self.colors["battery"]),
+                 pipe("dc_conduit",[(1.30,.20,3.20),(1.58,.20,2.97),
+                                    (1.58,-.20,2.40),(1.58,-.20,2.11)],
+                      self.colors["dark"],.035))
+
+        self.put("meter",
+                 cube("energy_meter",(.92,-1.41,1.70),(.44,.16,.65),
+                      self.colors["white"]),
+                 cube("meter_screen",(.92,-1.505,1.79),(.24,.025,.18),
+                      self.colors["glass"]),
+                 pipe("ac_wall_conduit",[(1.66,-.22,1.50),(1.60,-1.43,1.50),
+                                          (1.15,-1.43,1.50)],
+                      self.colors["dark"],.032))
+
+        # Storage is placed on a pad at grade, with a physical DC cable.
+        self.put("battery",
+                 cube("storage_pad",(2.16,-.45,.09),(1.0,.90,.18),
+                      self.colors["white"]),
+                 cube("battery_enclosure",(2.16,-.45,.81),(.69,.60,1.25),
+                      self.colors["battery"]),
+                 cube("battery_indicator",(2.16,-.77,1.08),(.20,.018,.12),
+                      self.colors["glass"]),
+                 pipe("battery_conduit",[(1.72,-.25,1.22),(1.88,-.25,1.22),
+                                          (1.88,-.45,1.22),(1.88,-.45,.80)],
+                      self.colors["dark"],.030))
+
+        # Low-contrast utility connection, no unexplained luminous diagonal.
+        self.put("grid",
+                 pipe("power_pole",[(7,-2,0),(7,-2,5.0)],
+                      self.colors["dark"],.11),
+                 pipe("service_drop",[(7,-2,4.50),(5,-2,3.80),
+                                      (2.8,-1.6,2.8),(1.45,-1.43,1.7)],
+                      self.colors["dark"],.028))
+        self.put("lights",
+                 sphere("window_lamp",(.62,-1.435,1.78),.12,self.colors["sun"]))
+
+        # Particle flow routes deliberately match actual cable endpoints.
+        self.paths["sun"]=[(-5.3,4.2,9.2),(.85,1.0,3.5)]
+        self.paths["panels"]=[(1.30,.20,3.20),(1.58,.20,2.97),
+                               (1.58,-.20,2.40),(1.58,-.20,2.11)]
+        self.paths["battery"]=[(1.72,-.25,1.22),(1.88,-.25,1.22),
+                                (1.88,-.45,.80),(2.16,-.45,.81)]
+        self.paths["grid"]=[(1.45,-1.43,1.7),(2.8,-1.6,2.8),
+                             (5,-2,3.80),(7,-2,4.50)]
+        self.paths["inverter"]=self.paths["panels"]
+        self.paths["lights"]=[(1.15,-1.43,1.50),(.62,-1.435,1.78)]
+
+        # Stable semantic camera anchors, not averages across unrelated houses.
+        self.focus.update({
+            "sun":(.0,1.0,3.25),"house":(.0,1.0,2.0),
+            "panels":(.82,1.0,3.35),"inverter":(1.0,-.55,1.75),
+            "battery":(1.4,-.6,1.35),"meter":(.65,-.9,1.8),
+            "grid":(2.9,-1.1,2.4),"lights":(.55,-.9,1.75),
+            "ground":(0,1.0,.5),
+        })
 
     def build(self, scene_template):
         if scene_template=="water_distribution":

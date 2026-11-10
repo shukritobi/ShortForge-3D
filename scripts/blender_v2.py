@@ -79,27 +79,38 @@ def camera_pose(cam, position, focus, at):
 
 def set_camera_motion(scene, cam, kit, beat, previous_at):
     target=beat["actions"][0]["target"]
-    anchor=weighted_point(kit.groups.get(target, []))
+    # A focus target is an explicit subject, not an average of multiple
+    # unrelated buildings or world-origin curve objects.
+    anchor=(Vector(kit.focus[target]) if target in kit.focus else
+            weighted_point(kit.groups.get(target, [])))
+    if "house" in kit.focus and target in ("battery","inverter","grid"):
+        anchor=anchor.lerp(Vector(kit.focus["house"]),.20)
     modes={
-        "establish":Vector((11,-24,13)),
-        "detail":Vector((4,-9,5)),
-        "section":Vector((4,-17,7)),
-        "follow":Vector((9,-13,5.5)),
-        "overhead":Vector((.3,-3,23)),
-        "reveal":Vector((12,-30,16)),
+        "establish":Vector((7,-15,8.5)),
+        "detail":Vector((3.4,-7.5,4.1)),
+        "section":Vector((4,-10,5.2)),
+        "follow":Vector((5,-10,5.3)),
+        "overhead":Vector((.7,-2.8,13)),
+        "reveal":Vector((6.5,-13.5,8.2)),
     }
     mode=beat["camera"]
     offset=modes[mode]
-    if target=="ground":
+    if target=="ground" and target not in kit.focus:
         anchor=Vector((0,-3,0))
     if mode=="section":
         anchor.z=max(anchor.z,0.1)
     start=frame(beat["start"])
     end=frame(beat["end"])-1
     arrive=min(end,start+max(8,int((end-start)*.35)))
-    camera_pose(cam,cam.location.copy(),anchor,start)
+    # Preserve the prior look-at on each shot's opening frame so the
+    # rotation interpolates smoothly instead of snapping to a new target.
+    previous_focus=getattr(kit,"last_camera_focus",None)
+    if previous_focus is None:
+        previous_focus=anchor
+    camera_pose(cam,cam.location.copy(),previous_focus,start)
     camera_pose(cam,anchor+offset,anchor,arrive)
-    camera_pose(cam,anchor+offset+Vector((.35,0,.15)),anchor,end)
+    camera_pose(cam,anchor+offset+Vector((.25,0,.08)),anchor,end)
+    kit.last_camera_focus=anchor.copy()
 
 
 def animate_appear(objects, at, fps, *, pulse=False):
@@ -182,20 +193,20 @@ def configure_scene(story):
     scene.render.film_transparent=False
     scene.world.use_nodes=True
     bg=scene.world.node_tree.nodes.get("Background")
-    bg.inputs["Color"].default_value=(.51,.66,.8,1)
-    bg.inputs["Strength"].default_value=.75
+    bg.inputs["Color"].default_value=(.46,.65,.85,1)
+    bg.inputs["Strength"].default_value=.84
     scene.view_settings.view_transform="AgX"
     bpy.ops.object.light_add(type="AREA",location=(-6,-9,14))
     lamp=bpy.context.object
     lamp.name="sf2_sun_area"
-    lamp.data.energy=2600
+    lamp.data.energy=2850
     lamp.data.shape="DISK"
-    lamp.data.size=14
+    lamp.data.size=9
     lamp.rotation_euler=(Vector((0,0,0))-lamp.location).to_track_quat("-Z","Y").to_euler()
     bpy.ops.object.camera_add(location=(12,-25,15))
     cam=bpy.context.object
     cam.name="sf2_portrait_camera"
-    cam.data.lens=30
+    cam.data.lens=26
     scene.camera=cam
     camera_pose(cam,cam.location,Vector((0,0,2)),1)
     return scene,cam
