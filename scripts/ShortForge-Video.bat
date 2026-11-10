@@ -21,7 +21,7 @@ if /I not "!BRANCH!"=="feat/phase1-local-water-tower-pipeline" (
 git pull --ff-only origin feat/phase1-local-water-tower-pipeline
 if errorlevel 1 (popd & pause & exit /b 3)
 echo Running all QA checks and, only if successful, rendering 960 frames.
-"%PY%" scripts\one_click_review.py --drive "%DRIVE%" --full
+"%PY%" scripts\one_click_review.py --drive "%DRIVE%." --full
 set "RESULT=!ERRORLEVEL!"
 popd
 if exist "%DRIVE%outbox\latest" start "" "%DRIVE%outbox\latest"

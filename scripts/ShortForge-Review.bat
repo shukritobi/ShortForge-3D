@@ -31,7 +31,7 @@ if errorlevel 1 (
 )
 echo Running tests, Blender keyframe review, and Qwen audio diagnostics.
 echo Original and fresh logs are preserved; Drive latest will point to this run.
-"%PY%" scripts\one_click_review.py --drive "%DRIVE%"
+"%PY%" scripts\one_click_review.py --drive "%DRIVE%."
 set "RESULT=!ERRORLEVEL!"
 popd
 if "!RESULT!"=="0" (

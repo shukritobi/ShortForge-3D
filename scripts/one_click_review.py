@@ -97,17 +97,71 @@ def latest_git_sha():
         return None
 
 
-def sync_bundle(run: Path, drive: Path | None):
-    if not drive or not drive.is_dir():
-        return {"status":"local_only", "path":str(run)}
-    if not (drive / "outbox").is_dir():
-        return {"status":"local_only", "reason":"Missing outbox in configured Google Drive folder"}
+def resolve_drive(path: Path | str | None):
+    """Locate the existing Drive workspace; never create a fake new root.
+
+    Windows batch syntax ending in backslash before a closing quote can pass
+    a stray quote to Python. Normalize that and inspect actual folder layout.
+    """
+    candidates = []
+    if path:
+        raw = str(path).strip().strip('"').strip("'")
+        if raw:
+            candidates.append(Path(raw).expanduser())
+    if os.environ.get("SHORTFORGE_DRIVE"):
+        candidates.append(Path(os.environ["SHORTFORGE_DRIVE"].strip().strip('"')).expanduser())
+    if os.name == "nt":
+        for disk in ("G", "H", "D", "C"):
+            candidates.append(Path(f"{disk}:/My Drive/ChatGPT ShortForge 3D"))
+    checked = []
+    for candidate in candidates:
+        try:
+            root = candidate.resolve()
+            checked.append(str(root))
+            if root.is_dir() and (root / "outbox").is_dir():
+                return root, checked
+        except OSError:
+            checked.append(str(candidate))
+    return None, checked
+
+
+def sync_latest_run(drive: Path | str | None, *, run_id: str | None = None,
+                    output_root: Path | None = None) -> dict:
+    """Recover local reports without rerunning TTS, Blender or tests."""
+    root = (output_root or OUTPUT) / "review_runs"
+    if not root.is_dir():
+        return {"status": "failed", "reason": "No local review_runs directory"}
+    if run_id is not None:
+        selected = (root / run_id).resolve()
+        if not selected.is_relative_to(root.resolve()) or not selected.is_dir():
+            return {"status": "failed", "reason": "Unknown run ID"}
+    else:
+        entries = [p for p in root.iterdir()
+                   if p.is_dir() and (p / "run_manifest.json").is_file()]
+        if not entries:
+            return {"status": "failed", "reason": "No local run manifests found"}
+        selected = max(entries, key=lambda p: p.stat().st_mtime)
+    if not (selected / "run_manifest.json").is_file():
+        return {"status": "failed", "reason": "Run manifest missing", "run": str(selected)}
+    result = sync_bundle(selected, drive)
+    return {"run_id": selected.name, **result}
+
+
+def sync_bundle(run: Path, drive: Path | str | None):
+    resolved, inspected = resolve_drive(drive)
+    if resolved is None:
+        return {"status": "sync_failed",
+                "reason": "Drive workspace/outbox not found",
+                "configured": str(drive) if drive else None,
+                "inspected": inspected[-8:],
+                "local_run": str(run)}
+    drive = resolved
     latest = drive / "outbox" / "latest"
     history = drive / "outbox" / "runs" / run.name
     # Never delete old reviews; keep full per-run logs and small visual/audio assets.
     try:
         latest.mkdir(parents=True, exist_ok=True)
-        history.mkdir(parents=True, exist_ok=False)
+        history.mkdir(parents=True, exist_ok=True)
         # Move the previous latest artefacts aside rather than mixing old video
         # files with a new failed narration attempt. Nothing is deleted.
         archive = drive / "outbox" / "archive" / (stamp() + "-" + os.urandom(2).hex())
@@ -250,6 +304,10 @@ def run(*, drive:Path | None, full:bool=False, audio:bool=True) -> int:
     (folder/"READ_ME_FIRST.txt").write_text("\n".join(msg)+"\n",encoding="utf-8")
     saved=sync_bundle(folder,drive)
     print(json.dumps({"run_id":folder.name,"status":status,"drive":saved},indent=2),flush=True)
+    if saved.get("status") != "synced":
+        print("[SYNC ERROR] Review was saved locally, but Drive was not updated. "
+              "Run --sync-latest after checking your Drive mount.", flush=True)
+        return 2
     return 1 if had_failure else 0
 
 
@@ -259,7 +317,16 @@ def main():
     p.add_argument("--full",action="store_true",
                    help="after tests/review/audio QA, generate a full 960-frame draft")
     p.add_argument("--skip-audio",action="store_true")
+    p.add_argument("--sync-latest",action="store_true",
+                   help="sync an existing local run without regenerating anything")
+    p.add_argument("--run-id",type=str,help="optional exact local run folder for recovery")
     args=p.parse_args()
+    if args.run_id and not args.sync_latest:
+        p.error("--run-id requires --sync-latest")
+    if args.sync_latest:
+        saved=sync_latest_run(args.drive,run_id=args.run_id)
+        print(json.dumps(saved,indent=2),flush=True)
+        return 0 if saved.get("status") == "synced" else 2
     return run(drive=args.drive,full=args.full,audio=not args.skip_audio)
 
 
