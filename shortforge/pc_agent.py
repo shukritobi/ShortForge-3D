@@ -18,7 +18,7 @@ import uuid
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "output"
 CONFIG = ROOT / ".shortforge.local.json"
-ALLOWED = {"doctor", "preview", "review", "tests", "full"}
+ALLOWED = {"doctor", "preview", "review", "tests", "audio", "full"}
 
 
 def now() -> str:
@@ -192,7 +192,7 @@ def scoped_path(base: Path, path: str | Path) -> Path:
 
 def validate_job(job: dict) -> dict:
     if not isinstance(job, dict) or job.get("version") != 1 or job.get("task") not in ALLOWED:
-        raise ValueError("Expected a version 1 doctor/preview/review/tests/full job")
+        raise ValueError("Expected a version 1 doctor/preview/review/tests/audio/full job")
     if set(job) - {"version", "task", "blender", "voice", "storyboard", "out", "preview_frame", "tts"}:
         raise ValueError("Unsupported job fields; shell commands are forbidden")
     if "storyboard" in job:
@@ -261,6 +261,19 @@ def run_task(task: str, *, blender: str | None = None, voice: str | None = None,
                        "--out", str(target.parent),
                        "--blender", information["tools"]["blender"]["path"],
                        "--preview-frames", "120,240,480,576,720,936"]
+    elif task == "audio":
+        name = "qwen" if tts == "qwen" else "kokoro"
+        if tts == "none":
+            error = "Audio diagnostics require a TTS provider (qwen or kokoro)"
+        elif not information["tts"].get(name+"_installed"):
+            error = "Requested local TTS engine not installed. Open doctor.json"
+        else:
+            target = scoped_path(OUTPUT, out) / "audio" / "narration.wav"
+            command = [sys.executable, "-m", "shortforge.cli", "audio",
+                       str(scoped_path(ROOT / "examples", storyboard)),
+                       "--out", str(target.parent.parent), "--tts", tts]
+            if voice:
+                command.extend(["--voice", voice])
     elif task == "full":
         tools = information["tools"]
         base_ready = (information["ready_preview"] and
@@ -326,16 +339,16 @@ def run_task(task: str, *, blender: str | None = None, voice: str | None = None,
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Local ShortForge diagnostics and safe task runner")
     sub = parser.add_subparsers(dest="task", required=True)
-    for name in ("doctor", "preview", "review", "tests", "full"):
+    for name in ("doctor", "preview", "review", "tests", "audio", "full"):
         cmd = sub.add_parser(name)
         cmd.add_argument("--blender")
         cmd.add_argument("--voice")
-        if name in ("preview", "review", "full"):
+        if name in ("preview", "review", "audio", "full"):
             cmd.add_argument("--storyboard", default="examples/water_tower_40s.json")
             cmd.add_argument("--out", default="output/water_tower")
         if name == "preview":
             cmd.add_argument("--frame", type=int, default=480)
-        if name == "full":
+        if name in ("audio", "full"):
             cmd.add_argument("--tts", choices=["qwen","kokoro","none"], default="qwen")
             cmd.add_argument("--speaker", help="Ryan/Aiden for Qwen; af_heart for Kokoro")
     job_cmd = sub.add_parser("job")

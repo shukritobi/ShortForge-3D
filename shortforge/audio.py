@@ -78,6 +78,9 @@ def create_audio(story: dict, output: str | Path, *, provider="qwen",
     beats_dir.mkdir(parents=True, exist_ok=True)
     ffmpeg_exe = require_program(ffmpeg)
     runtime = voice_python(provider, python)
+    # Never confuse yesterday's failed timing report or narration with this run.
+    for name in ("timing_report.json", "voice_manifest.json"):
+        (out / name).unlink(missing_ok=True)
     story_path = out / "tts_input.json"
     story_path.write_text(json.dumps(story, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     cmd = [
@@ -91,22 +94,49 @@ def create_audio(story: dict, output: str | Path, *, provider="qwen",
     # Generate and cache all beats in one inference process: prevents 8x model loads.
     subprocess.run(cmd, check=True, cwd=str(ROOT))
 
+    # Validate the *whole* narration first; always produce a useful timing
+    # report even when an individual beat fails to fit. CPU synthesis latency
+    # and spoken audio duration are deliberately reported separately.
+    rows = []
+    for index, beat in enumerate(story["beats"]):
+        raw = beats_dir / f"beat_{index:02d}_raw.wav"
+        allotted = beat["end"] - beat["start"]
+        duration = probe_duration(raw, ffprobe) if raw.is_file() and raw.stat().st_size > 100 else None
+        tempo = duration / max(.5, allotted-.15) if duration is not None else None
+        ok = tempo is not None and .65 <= tempo <= 1.7
+        rows.append({
+            "beat": beat["id"], "start_sec": beat["start"],
+            "end_sec": beat["end"], "word_count": len(beat["narration"].split()),
+            "spoken_audio_sec": round(duration,3) if duration is not None else None,
+            "target_sec": allotted,
+            "speed_adjustment": round(tempo,3) if tempo is not None else None,
+            "status": "fits" if ok else ("missing_audio" if tempo is None else "needs_rewrite_or_regeneration"),
+            "raw_file": raw.name,
+        })
+    problems = [x for x in rows if x["status"] != "fits"]
+    timing_report = {
+        "schema_version": 1, "provider": provider, "voice": voice,
+        "status": "needs_review" if problems else "passed",
+        "beats": rows, "failed_count": len(problems),
+        "total_generated_speech_sec": round(sum(x["spoken_audio_sec"] or 0 for x in rows),3),
+        "total_storyboard_sec": 40,
+        "message": "Audio length is NOT synthesis computation time. Do not compress speech above 1.7x.",
+    }
+    (out / "timing_report.json").write_text(json.dumps(timing_report,indent=2)+"\n",encoding="utf-8")
+    if problems:
+        first = problems[0]
+        raise RuntimeError(
+            f"Beat {first['beat']} spoken audio {first['spoken_audio_sec']}s "
+            f"cannot fit {first['target_sec']}s (tempo {first['speed_adjustment']}). "
+            f"See {out / 'timing_report.json'} and raw voice samples before rendering 960 frames."
+        )
+
     adjusted = []
     for index, beat in enumerate(story["beats"]):
         raw = beats_dir / f"beat_{index:02d}_raw.wav"
         target = beats_dir / f"beat_{index:02d}.wav"
-        if not raw.is_file() or raw.stat().st_size < 100:
-            raise RuntimeError(f"TTS failed to create beat {beat['id']} audio")
-        duration = probe_duration(raw, ffprobe)
         allotted = beat["end"] - beat["start"]
-        tempo = duration / max(.5, allotted-.15)
-        # Reject extreme speedups; the script should be edited instead.
-        if not .65 <= tempo <= 1.7:
-            raise RuntimeError(
-                f"Beat {beat['id']} voice {duration:.2f}s does not fit "
-                f"its {allotted:.2f}s shot (tempo={tempo:.2f}). "
-                "Shorten the script or adjust the voice pacing before a full render."
-            )
+        tempo = rows[index]["speed_adjustment"]
         subprocess.run([
             ffmpeg_exe, "-hide_banner", "-loglevel", "error", "-y",
             "-i", str(raw),
