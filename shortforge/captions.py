@@ -11,7 +11,7 @@ from pathlib import Path
 from .contract import validate_storyboard
 
 
-def cues(story: dict, words_per_cue: int = 4) -> list[dict]:
+def cues(story: dict, words_per_cue: int = 3) -> list[dict]:
     validate_storyboard(story)
     result = []
     for beat in story["beats"]:
@@ -43,6 +43,29 @@ def escape_ass(text: str) -> str:
     return re.sub(r"[{}]", "", text).replace("\\","").replace("\n"," ")
 
 
+def safe_ass_caption(text: str, max_chars: int = 22) -> str:
+    """Wrap cues to fit portrait-safe margins, without chopping text edges.
+
+    Splits between words (not characters) and intentionally rejects cues
+    demanding >2 subtitle lines. The caller can shorten its cue grouping.
+    """
+    words = text.split()
+    lines = []
+    current = []
+    for word in words:
+        prospective = " ".join([*current,word])
+        if current and len(prospective) > max_chars:
+            lines.append(" ".join(current))
+            current = [word]
+        else:
+            current.append(word)
+    if current:
+        lines.append(" ".join(current))
+    if len(lines) > 2 or any(len(line) > max_chars for line in lines):
+        raise ValueError(f"Caption too long for portrait frame: {text!r}")
+    return r"\N".join(escape_ass(line) for line in lines)
+
+
 def write_captions(story: dict, dest: str | Path) -> tuple[Path,Path]:
     dest = Path(dest)
     dest.mkdir(parents=True,exist_ok=True)
@@ -54,17 +77,17 @@ def write_captions(story: dict, dest: str | Path) -> tuple[Path,Path]:
 ScriptType: v4.00+
 PlayResX: 720
 PlayResY: 1280
-WrapStyle: 2
+WrapStyle: 0
 ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,Arial,54,&H00FFFFFF,&H000000FF,&H00000000,&H64000000,-1,0,0,0,100,100,0,0,1,5,1,2,60,60,205,1
+Style: Default,Arial,48,&H00FFFFFF,&H000000FF,&H00000000,&H64000000,-1,0,0,0,100,100,0,0,1,5,1,2,76,76,205,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
-    events = [f"Dialogue: 0,{ass_time(x['start'])},{ass_time(x['end'])},Default,,0,0,0,,{escape_ass(x['text'])}" for x in items]
+    events = [f"Dialogue: 0,{ass_time(x['start'])},{ass_time(x['end'])},Default,,0,0,0,,{safe_ass_caption(x['text'])}" for x in items]
     ass_path = dest/"captions.ass"
     ass_path.write_text(header+"\n".join(events)+"\n",encoding="utf-8")
     return json_path, ass_path
