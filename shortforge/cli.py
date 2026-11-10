@@ -44,7 +44,15 @@ def render(storyboard: Path, output: Path, *, blender="blender", preview_frame=N
         command.extend(["--preview-frames",",".join(map(str,preview_frames))])
     subprocess.run(command,check=True)
     manifest = validate_scene_manifest(output / "scene_manifest.json", story=story)
-    print("Scene audit passed:", manifest["structural_counts"])
+    if story["version"] == 2:
+        print("Phase 2 scene audit passed:", {
+            "template": manifest["scene_template"],
+            "assets": manifest["assets"],
+            "objects": manifest["object_count"],
+            "frames": manifest["frame_count"],
+        }, flush=True)
+    else:
+        print("Phase 1 scene audit passed:", manifest["structural_counts"], flush=True)
     if preview_frames is not None:
         _contact_sheet(output, preview_frames)
 

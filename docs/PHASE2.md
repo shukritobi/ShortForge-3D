@@ -91,3 +91,28 @@ water-flow loops, control panels, weather and sun-angle rigs. Give each stable
 IDs, units, pivot transforms, dependencies, license and golden preview.
 Then implement typed parameter schemas, render-by-shot invalidation,
 frame/image comparisons, multiple camera shot presets and approval dashboard.
+
+## Solar preview recovery (10 November 2026)
+
+The first Phase 2 Solar Home 120s PC preview rendered all six PNGs in Blender
+4.5.2, but the CLI incorrectly tried to print the legacy water tower's
+\`manifest["structural_counts"]\` key. The v2 manifest uses
+\`assets\` and \`object_count\`. The new version-aware CLI printer fixes it.
+
+To avoid another Blender render, run:
+
+    08 - Recover Phase2 Solar Preview.bat
+
+in the shared Drive root. It updates the Phase 2 branch, verifies the existing
+storyboard and scene manifest, checks all six PNGs, assembles a contact sheet
+with FFmpeg and syncs a **new recovery review bundle** into
+\`outbox/latest\`. No Qwen narration, Blender rerender or YouTube upload.
+
+Alternatively in PowerShell:
+
+    .\\.venv\\Scripts\\python.exe scripts\\phase2_runner.py --topic solar --duration 120 --mode recover-preview --drive "G:\\My Drive\\ChatGPT ShortForge 3D"
+
+Historical render provenance is preserved: the recovered images were generated
+before the current source update. They still require human visual review.
+Future failures after Blender produces some frames preserve those images in
+the diagnostic review bundle instead of discarding them.
