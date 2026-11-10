@@ -15,7 +15,7 @@ def test_reference_story_is_40_seconds_with_allowed_actions():
     assert len(s["beats"]) == 8
     assert s["beats"][0]["start"] == 0
     assert s["beats"][-1]["end"] == 40
-    assert 90 <= word_count(s) <= 135
+    assert 65 <= word_count(s) <= 85  # narratable at natural Qwen pace in 40s
 
 
 def test_rejects_timeline_gap():
