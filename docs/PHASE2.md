@@ -1,14 +1,16 @@
 # ShortForge Phase 2: reusable long-form procedural videos
 
-Status: code and tests committed on phase2 branch. Real Windows Blender
-preview and full scene verification are REQUIRED before approval.
+Windows Blender 4.5.2 has rendered all three packs. The review bundle includes
+a narrated 120-second solar draft and a native 1080×1920/30 FPS rainwater demo.
+See [acceptance evidence](ACCEPTANCE.md) for the remaining listening check.
 
 ## Supported profiles
 
-- 60, 75, 90, 120, 180 seconds; 720x1280, 24 FPS.
-- Storyboard version 2 with 8-40 contiguous problem-solution beats.
+- Built-in storyboards cover 40–240 seconds. Custom v2 timelines cover 20–3600 seconds.
+- 360×640 preview, 720×1280 draft, and 1080×1920 final at 24 or 30 FPS.
+- Storyboard version 2 accepts 8–720 contiguous problem-solution beats.
 - Existing 40-second water tower version 1 stays functional.
-- Blender frames: 1,440 / 1,800 / 2,160 / 2,880 / 4,320.
+- Blender frame count equals duration × frame rate.
 - Qwen3-TTS or Kokoro English narration; ASS captions; FFmpeg H264/AAC.
 - Google Drive review bundle, no YouTube upload.
 
@@ -20,6 +22,8 @@ preview and full scene verification are REQUIRED before approval.
 2. Rooftop photovoltaic system (solar_home pack):
    24 original mechanism steps, house, roof panels, sun, inverter,
    home battery, grid connection, electricity meter and lighting.
+3. Rainwater harvesting (rainwater pack): gutter, first flush, covered tank,
+   cutaway, overflow, pump and outlet.
 
 A user-provided topic outside registered mechanism packs is rejected rather
 than rendered with misleading water-tower assets. More topics can be added by
@@ -64,33 +68,23 @@ Only after visual review authorizes a full render:
 The storyboard and outputs remain in
 output/projects/solar_home/120s/.
 
-Render caching uses the actual storyboard, Blender engine source and asset
-source hash. A conflicting fingerprint refuses to reuse existing frames.
-Successful runs resume missing frame numbers instead of rendering all frames
-again. Use a new output directory to change an existing approved scene.
+The cache checks shot keys, Blender version, model sources and PNG integrity.
+Resume reuses valid frames and regenerates affected or corrupt frames. Audio,
+caption and SFX edits leave the visual keys unchanged.
 
 ## Important limitations / acceptance gates
 
 - GitHub CI validates Python and script syntax, not Blender's actual render.
 - New topic packs require visual testing on the Windows Blender workstation.
-- Camera framing, geometry, flow particles and material fidelity are not
-  yet approved for the new packs. The six-frame contact sheet is mandatory.
+- Inspect a six-frame preview for each new project. The solar review sampled
+  all 24 beats and 23 transition boundaries.
 - Long-form English voice must pass all beat duration and loudness QA before
   rendering thousands of frames. A 180-second video needs more spoken detail
   than a 40-second Short; inspect intentional pauses.
 - Existing PC one-click review launcher targets the Phase 1 water tower.
   Use the new Phase 2 launcher for topic selection.
-- Web dashboard, general AI-directed geometric invention, automatically
-  licensed external assets, sound effects and YouTube publishing remain
-  subsequent milestones, not features claimed as completed.
-
-## Next assets/actions
-
-Extract modular roof variants, street kits, parametric pipe elbows, valves,
-water-flow loops, control panels, weather and sun-angle rigs. Give each stable
-IDs, units, pivot transforms, dependencies, license and golden preview.
-Then implement typed parameter schemas, render-by-shot invalidation,
-frame/image comparisons, multiple camera shot presets and approval dashboard.
+- Studio supports preview, approval, rendering, logs and retry. The existing
+  effects are original procedural audio. See the [Studio guide](PRODUCTION.md).
 
 ## Solar preview recovery (10 November 2026)
 

@@ -27,7 +27,10 @@ def test_silent_recompose_ignores_old_beat_waveforms(tmp_path, monkeypatch):
     (audio/"voice_manifest.json").write_text(json.dumps({"provider":"none"}))
     monkeypatch.setattr(video,"validate_storyboard",lambda value: value)
     monkeypatch.setattr(video,"require_program",lambda value: value)
-    monkeypatch.setattr(video.subprocess,"run",lambda *args, **kwargs: None)
+    def encode(command, **kwargs):
+        from pathlib import Path
+        Path(command[-1]).write_bytes(b"encoded")
+    monkeypatch.setattr(video.subprocess,"run",encode)
 
     def write_captions(story, folder, *, audio_dir):
         assert audio_dir is None

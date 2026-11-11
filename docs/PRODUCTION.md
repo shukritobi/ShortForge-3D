@@ -10,7 +10,8 @@ and no publishing endpoint. Stop the console with Ctrl+C when finished.
    action types and numeric parameters are executable. Save validates it.
 3. Generate the six-frame preview. Inspect construction, contacts and framing.
 4. Approve that revision, then check Qwen narration. Listen to the WAV samples.
-5. Render the video. A changed storyboard or source revision invalidates approval.
+5. Render the video. Select **Silent technical export** for a quick test without
+   voice synthesis. A changed storyboard or source revision invalidates approval.
 6. Recompose captions without Blender. Review the MP4 before any external use.
 
 `scripts/ShortForge-Verify.bat` runs tests and previews all three topics and
@@ -67,8 +68,10 @@ fingerprints are a future refinement, not claimed here.
 Frames are accepted only after PNG chunk CRC, dimensions and pixel-stream checks.
 Interrupted jobs resume verified frames. Replaced frames move to `cache_archive`;
 historical renders are not deleted. `render_state_v2.json` is atomically replaced.
-Dashboard job failures preserve logs and release the single job slot; interrupted
-jobs remain visible and can be retried. Changing captions only calls FFmpeg.
+Dashboard job failures preserve logs and release the job slot. After restart,
+an unfinished job appears as interrupted. Retry once the previous process exits.
+Studio checks for a current visual receipt before recomposing captions and checks
+the resulting video before marking a job passed.
 
 ## Sound and diagnostics
 
@@ -76,6 +79,13 @@ jobs remain visible and can be retried. Changing captions only calls FFmpeg.
 transition, impact and ambient effects. Add a beat cue such as
 `{"name":"electric","offset":0.2,"gain_db":-30}`. Effects mix under normalized
 narration and a final limiter. Default storyboards leave effects opt-in.
+The reviewed solar example uses four quiet cues. It also uses top-screen
+`callout` labels to identify DC, AC, storage and the grid.
+
+To use the reviewed solar timing with its matching existing soundtrack, run
+`shortforge compose STORY --out PROJECT --caption-timing TIMING.json`.
+The cue text must match the storyboard and every cue must stay within its beat.
+Recheck timing whenever the narration or voice changes.
 
 `scripts/blender_audit.py`, executed by Blender, measures solar contacts and
 renders six additional assembly angles. `scripts/verify_production.py PROJECT STORY`

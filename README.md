@@ -3,16 +3,16 @@
 ## Phase 2: reusable long-form 3D videos (stacked PR)
 
 Phase 2 adds a **second storyboard/renderer generation**, keeping the proven
-40-second water-tower pipeline as a working baseline. It supports **60, 75,
-90, 120 and 180 second** videos with registered mechanism-based scene packs,
-starting with water distribution and rooftop solar energy. Both use shared
+40-second water-tower pipeline as a working baseline. It supports **40–240 seconds**
+with built-in storyboards for water distribution, rooftop solar and rainwater
+harvesting. The registered packs use shared
 parametric houses, materials, cameras, object animation, TTS, captions,
 resume-aware frames and FFmpeg composition.
 
-The new renderer and profiles need their **first real PC preview** and should
-not be treated as production-quality visuals until reviewed. Other topics
-require registered, vetted scene and action packs; unsupported topics are
-rejected rather than depicted inaccurately.
+Windows Blender exports have been verified at 720×1280/24 FPS and
+1080×1920/30 FPS. Open `scripts/ShortForge-Studio.bat` to preview, approve
+and render a project. See the acceptance report for review findings and the
+remaining listening check. New topics need a registered scene and action pack.
 
 Read [Phase 2 setup and limits](docs/PHASE2.md). Create an example with:
 
@@ -202,8 +202,9 @@ for the optional TypeScript/Remotion compositor consuming the same captions JSON
 
 This is the *first* production slice, not a generalized AI-to-any-3D-video engine.
 Blender + FFmpeg are needed for a technical silent MP4; a dedicated local
-Qwen3-TTS or Kokoro environment enables the actual narrated Short. A persistent dashboard, job queue, exact word alignment, fact-checking
-agent, batch rendering and YouTube approval/upload workflow are later milestones.
+Qwen3-TTS or Kokoro environment enables the actual narrated Short. Phase 2 adds
+local Studio project history and single-job rendering. Caption timings still
+need editorial review.
 
 **Publishing is deliberately disabled in Phase 1.**
 # Local Studio and production verification

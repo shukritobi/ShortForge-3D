@@ -8,7 +8,7 @@ from .captions import write_captions
 from .contract import validate_storyboard, WIDTH, HEIGHT, FPS, SECONDS
 
 
-def compose(story: dict, output: str | Path, *, ffmpeg="ffmpeg") -> Path:
+def compose(story: dict, output: str | Path, *, ffmpeg="ffmpeg", caption_timing=None) -> Path:
     validate_storyboard(story)
     out = Path(output).resolve()
     frames = out/"frames"
@@ -23,8 +23,12 @@ def compose(story: dict, output: str | Path, *, ffmpeg="ffmpeg") -> Path:
     voice_manifest=out/"audio"/"voice_manifest.json"
     silent=voice_manifest.is_file() and json.loads(voice_manifest.read_text(encoding="utf-8")).get("provider")=="none"
     aligned=out/"audio" if not silent and (out/"audio"/"beats"/"beat_00.wav").is_file() else None
-    _,ass = write_captions(story,out/"captions",audio_dir=aligned)
+    caption_options={"audio_dir":aligned}
+    if caption_timing is not None:
+        caption_options["timing"]=caption_timing
+    _,ass = write_captions(story,out/"captions",**caption_options)
     video = out/"draft.mp4"
+    pending = out/"draft.part.mp4"
     # libass takes a POSIX/escaped filter path; run with the working directory
     # set to the captions folder so Windows drive colons are never parsed as filters.
     ass_filter = "ass=captions.ass"
@@ -36,7 +40,7 @@ def compose(story: dict, output: str | Path, *, ffmpeg="ffmpeg") -> Path:
         audio_filter=("[1:a]loudnorm=I=-16:TP=-1.5:LRA=9[voice];"
                       "[voice][2:a]amix=inputs=2:normalize=0,alimiter=limit=0.84:level=0[aud]")
     subprocess.run(
-        [ffmpeg,"-hide_banner","-loglevel","error","-y",
+        [ffmpeg,"-hide_banner","-loglevel","error","-xerror","-y",
          "-framerate",str(story["fps"]),"-start_number","1",
          "-i",str(frames/"frame_%06d.png"),
          "-i",str(wav),
@@ -45,9 +49,10 @@ def compose(story: dict, output: str | Path, *, ffmpeg="ffmpeg") -> Path:
          "-map","[sub]","-map","[aud]",
          "-c:v","libx264","-preset","medium","-crf","18",
          "-pix_fmt","yuv420p","-c:a","aac","-b:a","160k",
-         "-t",str(duration),"-ar","48000","-movflags","+faststart",str(video)],
+         "-t",str(duration),"-ar","48000","-movflags","+faststart",str(pending)],
         cwd=str(out/"captions"),check=True,
     )
+    pending.replace(video)
     return video
 
 

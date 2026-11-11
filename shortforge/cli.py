@@ -120,6 +120,7 @@ def parser():
     c.add_argument("storyboard",type=Path)
     c.add_argument("--out",type=Path,default=Path("output/water_tower"))
     c.add_argument("--ffmpeg",default="ffmpeg")
+    c.add_argument("--caption-timing",type=Path,help="validated cue timing JSON for this soundtrack")
     q = sub.add_parser("check")
     q.add_argument("video",type=Path)
     q.add_argument("--ffprobe",default="ffprobe")
@@ -200,7 +201,8 @@ def main(argv=None):
         print(sound)
         return
     if args.command == "compose":
-        print(compose(story,args.out,ffmpeg=args.ffmpeg))
+        timing=json.loads(args.caption_timing.read_text(encoding="utf-8")) if args.caption_timing else None
+        print(compose(story,args.out,ffmpeg=args.ffmpeg,caption_timing=timing))
         return
     if args.command == "run":
         write_captions(story,args.out/"captions")
@@ -242,4 +244,6 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    main()
+    from .studio_lock import studio_job_slot
+    with studio_job_slot():
+        main()

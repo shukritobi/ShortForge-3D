@@ -13,10 +13,16 @@ FPS-aware animation/export, arbitrary duration contracts, longer distinct script
 rainwater pack, safe shared transform actions, shot/resume cache, waveform-assisted
 captions, shared Qwen cache, local dashboard, original SFX, review launchers.
 
-Verified: 127 Python tests, real solar contact audit (13 checks), complete
-120s solar MP4 with Qwen, 90/120/180s narration timing, 600-frame rainwater demo
-at 1080×1920/30 FPS, dashboard preview jobs, cache reuse, caption recomposition
-and Drive review sync. See `docs/ACCEPTANCE.md` for evidence and remaining review.
+Hardening checkpoint: 132 Python tests, 13 Blender contact checks and 119 visual
+samples. `output/solar_hardened` holds the 120s edit, reviewed cue timings,
+standalone soundtrack and diagnostic JSON. It reused 2,880 PNGs and the original
+Qwen WAV. `output/solar_corrected` is the baseline. Final AAC matched 208 scripted
+words with cached Whisper medium.
+
+Studio QA project `output/dashboard_projects/6a5190a51905` passed a 20s browser
+workflow. The interrupted run had 142 frame files. Retry reused 140, regenerated
+the damaged and uncommitted files, and completed 480 frames. Its old log is in
+`history/20261111T011911-e6e89b`. See `docs/ACCEPTANCE.md` and Drive `outbox/latest`.
 
 Important limitations: waveform estimates are not exact forced word alignment;
 global asset source edits invalidate all render shots; construction-grade engineering

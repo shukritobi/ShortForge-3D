@@ -66,6 +66,10 @@ def validate_story_v2(story: dict) -> dict:
         if abs(start-cursor) > 0.0001 or end-start < 2.5 or end > duration+.0001:
             raise StoryV2Error(f"beat {key}: non-contiguous or too short")
         cursor = end
+        callout=beat.get("callout")
+        if callout is not None and (not isinstance(callout,str) or not callout.strip() or
+                                    len(callout)>42 or any(ord(c)<32 for c in callout)):
+            raise StoryV2Error(f"beat {key}: invalid callout")
         sounds=beat.get("sfx",[])
         if not isinstance(sounds,list) or len(sounds)>5:
             raise StoryV2Error(f"beat {key}: invalid SFX list")

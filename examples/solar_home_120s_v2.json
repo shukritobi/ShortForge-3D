@@ -80,7 +80,13 @@
         "panels"
       ],
       "transition": "smooth",
-      "sfx": [],
+      "sfx": [
+        {
+          "name": "assembly",
+          "offset": 0.66,
+          "gain_db": -32
+        }
+      ],
       "validation_rules": [
         "subject_visible",
         "portrait_safe"
@@ -134,7 +140,8 @@
       "validation_rules": [
         "subject_visible",
         "portrait_safe"
-      ]
+      ],
+      "callout": "Light reaches the PV cells"
     },
     {
       "id": "beat_06",
@@ -159,7 +166,8 @@
       "validation_rules": [
         "subject_visible",
         "portrait_safe"
-      ]
+      ],
+      "callout": "Panels generate DC"
     },
     {
       "id": "beat_07",
@@ -205,11 +213,18 @@
         "inverter"
       ],
       "transition": "smooth",
-      "sfx": [],
+      "sfx": [
+        {
+          "name": "electric",
+          "offset": 0.7,
+          "gain_db": -33
+        }
+      ],
       "validation_rules": [
         "subject_visible",
         "portrait_safe"
-      ]
+      ],
+      "callout": "DC travels to the inverter"
     },
     {
       "id": "beat_09",
@@ -234,7 +249,8 @@
       "validation_rules": [
         "subject_visible",
         "portrait_safe"
-      ]
+      ],
+      "callout": "Inverter: DC to AC"
     },
     {
       "id": "beat_10",
@@ -284,7 +300,8 @@
       "validation_rules": [
         "subject_visible",
         "portrait_safe"
-      ]
+      ],
+      "callout": "AC powers household loads"
     },
     {
       "id": "beat_12",
@@ -330,11 +347,18 @@
         "grid"
       ],
       "transition": "smooth",
-      "sfx": [],
+      "sfx": [
+        {
+          "name": "electric",
+          "offset": 0.92,
+          "gain_db": -35
+        }
+      ],
       "validation_rules": [
         "subject_visible",
         "portrait_safe"
-      ]
+      ],
+      "callout": "Surplus AC goes to the grid"
     },
     {
       "id": "beat_14",
@@ -355,11 +379,18 @@
         "battery"
       ],
       "transition": "smooth",
-      "sfx": [],
+      "sfx": [
+        {
+          "name": "assembly",
+          "offset": 0.61,
+          "gain_db": -33
+        }
+      ],
       "validation_rules": [
         "subject_visible",
         "portrait_safe"
-      ]
+      ],
+      "callout": "Optional battery storage"
     },
     {
       "id": "beat_15",
@@ -409,7 +440,8 @@
       "validation_rules": [
         "subject_visible",
         "portrait_safe"
-      ]
+      ],
+      "callout": "Cloud cover reduces output"
     },
     {
       "id": "beat_17",
@@ -459,7 +491,8 @@
       "validation_rules": [
         "subject_visible",
         "portrait_safe"
-      ]
+      ],
+      "callout": "Meter: import and export"
     },
     {
       "id": "beat_19",
