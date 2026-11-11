@@ -551,7 +551,7 @@ def siphon(s):
                 s.line("outlet_level",[(.51,-.62,.65),(1.81,-.62,.65)],s.ice,.012)
             mark=s.label("OUTLET",(.95,-.65,outlet[2]+.14),.12)
             if i==3:
-                def lift(start,end,fps):
+                def lift(start,end,fps,outer=outer,column=column,mark=mark):
                     for phase,z in ((0,.65),(.36,1.38),(.70,1.38),(1,.65)):
                         frame=start+round((end-start)*phase)
                         for obj in (outer,column):
