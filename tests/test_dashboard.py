@@ -91,7 +91,8 @@ def test_compose_receipt_ignores_audio_but_rejects_visual_changes(project):
                              sfx=[{"name":"electric","gain_db":-32}])
     d.mutate({"action":"save","id":ident,"story":story})
     assert "compose" in d.command_for(p,"compose")
-    story["beats"][-1]["camera"]="overhead"
+    last=story["beats"][-1]
+    last["camera"]="section" if last["camera"]!="section" else "overhead"
     d.mutate({"action":"save","id":ident,"story":story})
     with pytest.raises(ValueError,match="visual revision"):d.command_for(p,"compose")
 

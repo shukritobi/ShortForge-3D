@@ -199,7 +199,7 @@
       "problem": "Storage and backup are different",
       "solution": "A battery can shift energy into the evening. Backup during a blackout also needs equipment that can safely isolate the home from the grid.",
       "narration": "A battery can shift energy into the evening. Backup during a blackout also needs equipment that can safely isolate the home from the grid.",
-      "camera": "reveal",
+      "camera": "overhead",
       "actions": [
         {
           "type": "appear",

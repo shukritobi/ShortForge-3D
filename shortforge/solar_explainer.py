@@ -26,7 +26,7 @@ SOLAR_MECHANISMS = [
     ("If generation exceeds demand, a system allowed to export can send the surplus out. The meter measures the exchange in both directions.",
      "grid", "flow", "section", "Meter measures import and export"),
     ("A battery can shift energy into the evening. Backup during a blackout also needs equipment that can safely isolate the home from the grid.",
-     "battery", "appear", "reveal", "Storage and backup are different"),
+     "battery", "appear", "overhead", "Storage and backup are different"),
 ]
 
 SOLAR_EXTRA = [
