@@ -17,3 +17,22 @@ def test_captions_cover_all_beats(tmp_path):
 def test_ass_escapes_control_characters():
     assert escape_ass(r"hello {bad}\world") == "hello badworld"
     assert ass_time(40) == "0:00:40.00"
+
+
+def test_reviewed_caption_timing_rejects_cross_beat_and_stale_words():
+    import copy
+    import pytest
+    from shortforge.captions import checked_timing, cues
+    from shortforge.topic_packs import build_story
+
+    story=build_story("solar",120)
+    timing=cues(story)
+    assert checked_timing(story,timing)[0]["alignment"]=="external_review_timing"
+    bad=copy.deepcopy(timing)
+    bad[0]["end"]=story["beats"][0]["end"]+.1
+    with pytest.raises(ValueError,match="Invalid caption timing"):
+        checked_timing(story,bad)
+    bad=copy.deepcopy(timing)
+    bad[0]["text"]="Previously spoken words"
+    with pytest.raises(ValueError,match="does not match"):
+        checked_timing(story,bad)

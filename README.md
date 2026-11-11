@@ -1,4 +1,32 @@
-# ShortForge 3D | Phase 1
+# ShortForge 3D
+
+## Phase 2: reusable long-form 3D videos (stacked PR)
+
+Phase 2 adds a **second storyboard/renderer generation**, keeping the proven
+40-second water-tower pipeline as a working baseline. It supports **40–240 seconds**
+with built-in storyboards for water distribution, rooftop solar and rainwater
+harvesting. The registered packs use shared
+parametric houses, materials, cameras, object animation, TTS, captions,
+resume-aware frames and FFmpeg composition.
+
+Windows Blender exports have been verified at 720×1280/24 FPS and
+1080×1920/30 FPS. Open `scripts/ShortForge-Studio.bat` to preview, approve
+and render a project. See the acceptance report for review findings and the
+remaining listening check. New topics need a registered scene and action pack.
+
+Read [Phase 2 setup and limits](docs/PHASE2.md). Create an example with:
+
+```powershell
+shortforge plan --engine library --topic "solar panels" --duration 120 --output output/solar_home_story.json
+shortforge validate output/solar_home_story.json
+```
+
+For a six-frame Blender preview use the provided
+`scripts/ShortForge-Phase2-Preview.bat` launcher. No YouTube publishing.
+
+---
+
+ | Phase 1
 
 Local-first, original, procedural **educational YouTube Shorts**. This implementation
 builds a continuous stylized 3D water-tower neighbourhood in Blender, narrates
@@ -174,7 +202,26 @@ for the optional TypeScript/Remotion compositor consuming the same captions JSON
 
 This is the *first* production slice, not a generalized AI-to-any-3D-video engine.
 Blender + FFmpeg are needed for a technical silent MP4; a dedicated local
-Qwen3-TTS or Kokoro environment enables the actual narrated Short. A persistent dashboard, job queue, exact word alignment, fact-checking
-agent, batch rendering and YouTube approval/upload workflow are later milestones.
+Qwen3-TTS or Kokoro environment enables the actual narrated Short. Phase 2 adds
+local Studio project history and single-job rendering. Caption timings still
+need editorial review.
 
 **Publishing is deliberately disabled in Phase 1.**
+# Local Studio and production verification
+
+Start `scripts/ShortForge-Studio.bat` for the local review dashboard, or
+`scripts/ShortForge-Verify.bat` for tests and real previews of all three topics.
+See [production workflow](docs/PRODUCTION.md), [acceptance evidence](docs/ACCEPTANCE.md)
+and [work handoff](docs/WORK_HANDOFF.md). Publishing remains disabled.
+
+The detailed solar pack has a suburban set, enlarged photovoltaic models and
+camera cuts timed to the narration. The [112-second director cut](examples/solar_neighbourhood_112s_v2.json)
+uses a uniform 1.07× speaking rate. Follow [the solar workflow](docs/SOLAR_PRODUCTION.md)
+to measure the voice and preview the timed shots. See the
+[episode scripts](docs/EPISODE_SCRIPTS.md) and [episode backlog](docs/TOPIC_BACKLOG.md)
+for narration, shot plans and researched hooks.
+
+To measure, preview and render the authored season on the workstation, run
+`python scripts/produce_episode.py complete --blender PATH_TO_BLENDER`.
+Use `--episode episode_compost` for a single episode and `--review-dir PATH`
+to copy verified exports to a review folder.

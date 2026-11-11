@@ -1,0 +1,465 @@
+{
+  "version": 2,
+  "title": "How a Water Tower Supplies a Neighbourhood",
+  "duration": 90,
+  "fps": 24,
+  "resolution": [
+    720,
+    1280
+  ],
+  "audience": "general",
+  "complexity": "standard",
+  "scene_template": "water_distribution",
+  "beats": [
+    {
+      "id": "beat_01",
+      "start": 0.0,
+      "end": 5.0,
+      "problem": "A city needs clean water at every tap, every hour.",
+      "solution": "Visual demonstration: appear neighbourhood",
+      "narration": "A city needs clean water at every tap, every hour.",
+      "camera": "establish",
+      "actions": [
+        {
+          "type": "appear",
+          "target": "neighbourhood"
+        }
+      ],
+      "scene_id": "water_distribution",
+      "required_assets": [
+        "neighbourhood"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_02",
+      "start": 5.0,
+      "end": 10.0,
+      "problem": "One small pump can serve a home, but demand keeps growing.",
+      "solution": "Visual demonstration: appear pump",
+      "narration": "One small pump can serve a home, but demand keeps growing.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "appear",
+          "target": "pump"
+        }
+      ],
+      "scene_id": "water_distribution",
+      "required_assets": [
+        "pump"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_03",
+      "start": 10.0,
+      "end": 15.0,
+      "problem": "Water pressure begins to fall across the nearby streets.",
+      "solution": "Visual demonstration: highlight branch",
+      "narration": "Water pressure begins to fall across the nearby streets.",
+      "camera": "section",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "branch"
+        }
+      ],
+      "scene_id": "water_distribution",
+      "required_assets": [
+        "branch"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_04",
+      "start": 15.0,
+      "end": 20.0,
+      "problem": "A larger pump moves more water, but demand still fluctuates.",
+      "solution": "Visual demonstration: pulse pump",
+      "narration": "A larger pump moves more water, but demand still fluctuates.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "pulse",
+          "target": "pump"
+        }
+      ],
+      "scene_id": "water_distribution",
+      "required_assets": [
+        "pump"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_05",
+      "start": 20.0,
+      "end": 25.0,
+      "problem": "During quiet hours, that extra capacity often sits unused.",
+      "solution": "Visual demonstration: highlight pump",
+      "narration": "During quiet hours, that extra capacity often sits unused.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "pump"
+        }
+      ],
+      "scene_id": "water_distribution",
+      "required_assets": [
+        "pump"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_06",
+      "start": 25.0,
+      "end": 30.0,
+      "problem": "So engineers build a storage tank above the surrounding homes.",
+      "solution": "Visual demonstration: assemble tower",
+      "narration": "So engineers build a storage tank above the surrounding homes.",
+      "camera": "establish",
+      "actions": [
+        {
+          "type": "assemble",
+          "target": "tower"
+        }
+      ],
+      "scene_id": "water_distribution",
+      "required_assets": [
+        "tower"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_07",
+      "start": 30.0,
+      "end": 35.0,
+      "problem": "Strong columns carry the enormous weight of the elevated tank.",
+      "solution": "Visual demonstration: highlight tower",
+      "narration": "Strong columns carry the enormous weight of the elevated tank.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "tower"
+        }
+      ],
+      "scene_id": "water_distribution",
+      "required_assets": [
+        "tower"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_08",
+      "start": 35.0,
+      "end": 40.0,
+      "problem": "Braces help resist side forces, including the push of wind.",
+      "solution": "Visual demonstration: pulse tower",
+      "narration": "Braces help resist side forces, including the push of wind.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "pulse",
+          "target": "tower"
+        }
+      ],
+      "scene_id": "water_distribution",
+      "required_assets": [
+        "tower"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_09",
+      "start": 40.0,
+      "end": 45.0,
+      "problem": "Pumps fill the tank when supply and demand allow it.",
+      "solution": "Visual demonstration: flow tank",
+      "narration": "Pumps fill the tank when supply and demand allow it.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "flow",
+          "target": "tank"
+        }
+      ],
+      "scene_id": "water_distribution",
+      "required_assets": [
+        "tank"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_10",
+      "start": 45.0,
+      "end": 50.0,
+      "problem": "The tank stores water high above the streets below.",
+      "solution": "Visual demonstration: highlight tank",
+      "narration": "The tank stores water high above the streets below.",
+      "camera": "establish",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "tank"
+        }
+      ],
+      "scene_id": "water_distribution",
+      "required_assets": [
+        "tank"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_11",
+      "start": 50.0,
+      "end": 55.0,
+      "problem": "Water can then descend through a large distribution main.",
+      "solution": "Visual demonstration: flow main",
+      "narration": "Water can then descend through a large distribution main.",
+      "camera": "follow",
+      "actions": [
+        {
+          "type": "flow",
+          "target": "main"
+        }
+      ],
+      "scene_id": "water_distribution",
+      "required_assets": [
+        "main"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_12",
+      "start": 55.0,
+      "end": 60.0,
+      "problem": "The main runs underground along the roads of the neighbourhood.",
+      "solution": "Visual demonstration: cutaway ground",
+      "narration": "The main runs underground along the roads of the neighbourhood.",
+      "camera": "section",
+      "actions": [
+        {
+          "type": "cutaway",
+          "target": "ground"
+        }
+      ],
+      "scene_id": "water_distribution",
+      "required_assets": [
+        "ground"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_13",
+      "start": 60.0,
+      "end": 65.0,
+      "problem": "Smaller service pipes branch off toward each house.",
+      "solution": "Visual demonstration: appear branch",
+      "narration": "Smaller service pipes branch off toward each house.",
+      "camera": "section",
+      "actions": [
+        {
+          "type": "appear",
+          "target": "branch"
+        }
+      ],
+      "scene_id": "water_distribution",
+      "required_assets": [
+        "branch"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_14",
+      "start": 65.0,
+      "end": 70.0,
+      "problem": "The elevated supply helps smooth rapid changes in water demand.",
+      "solution": "Visual demonstration: pulse tank",
+      "narration": "The elevated supply helps smooth rapid changes in water demand.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "pulse",
+          "target": "tank"
+        }
+      ],
+      "scene_id": "water_distribution",
+      "required_assets": [
+        "tank"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_15",
+      "start": 70.0,
+      "end": 75.0,
+      "problem": "Control valves can isolate a section for maintenance.",
+      "solution": "Visual demonstration: highlight branch",
+      "narration": "Control valves can isolate a section for maintenance.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "branch"
+        }
+      ],
+      "scene_id": "water_distribution",
+      "required_assets": [
+        "branch"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_16",
+      "start": 75.0,
+      "end": 80.0,
+      "problem": "Sensors tell operators when the tank needs refilling.",
+      "solution": "Visual demonstration: pulse tank",
+      "narration": "Sensors tell operators when the tank needs refilling.",
+      "camera": "detail",
+      "actions": [
+        {
+          "type": "pulse",
+          "target": "tank"
+        }
+      ],
+      "scene_id": "water_distribution",
+      "required_assets": [
+        "tank"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_17",
+      "start": 80.0,
+      "end": 85.0,
+      "problem": "This storage also adds resilience during short interruptions.",
+      "solution": "Visual demonstration: highlight tank",
+      "narration": "This storage also adds resilience during short interruptions.",
+      "camera": "reveal",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "tank"
+        }
+      ],
+      "scene_id": "water_distribution",
+      "required_assets": [
+        "tank"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    },
+    {
+      "id": "beat_18",
+      "start": 85.0,
+      "end": 90.0,
+      "problem": "And that is how one water tower helps supply a neighbourhood.",
+      "solution": "Visual demonstration: highlight neighbourhood",
+      "narration": "And that is how one water tower helps supply a neighbourhood.",
+      "camera": "reveal",
+      "actions": [
+        {
+          "type": "highlight",
+          "target": "neighbourhood"
+        }
+      ],
+      "scene_id": "water_distribution",
+      "required_assets": [
+        "neighbourhood"
+      ],
+      "transition": "smooth",
+      "sfx": [],
+      "validation_rules": [
+        "subject_visible",
+        "portrait_safe"
+      ]
+    }
+  ]
+}

@@ -2,13 +2,387 @@
   "catalog_version": 1,
   "design_system": "ShortForge-Stylized-001",
   "entries": [
-    {"id":"environment.neighbourhood","version":"0.1.0","kind":"environment","source":"scripts/blender_water_tower.py","license":"original","status":"prototype","tags":["houses","grass","road","trees"]},
-    {"id":"model.water_tower","version":"0.1.0","kind":"model","source":"scripts/blender_water_tower.py","license":"original","status":"prototype","tags":["storage","water","infrastructure"]},
-    {"id":"model.pump_station","version":"0.1.0","kind":"model","source":"scripts/blender_water_tower.py","license":"original","status":"prototype","tags":["pump","water"]},
-    {"id":"model.underground_main","version":"0.1.0","kind":"model","source":"scripts/blender_water_tower.py","license":"original","status":"prototype","tags":["pipes","cutaway","distribution"]},
-    {"id":"action.assemble_supports","version":"0.1.0","kind":"action","source":"scripts/blender_water_tower.py","license":"original","status":"prototype","tags":["construction","animation"]},
-    {"id":"action.fill_tank","version":"0.1.0","kind":"action","source":"scripts/blender_water_tower.py","license":"original","status":"prototype","tags":["water","animation"]},
-    {"id":"action.pipe_flow","version":"0.1.0","kind":"action","source":"scripts/blender_water_tower.py","license":"original","status":"prototype","tags":["water","animation"]},
-    {"id":"camera.portrait_reveal","version":"0.1.0","kind":"camera","source":"scripts/blender_water_tower.py","license":"original","status":"prototype","tags":["portrait","camera"]}
+    {
+      "id": "environment.neighbourhood",
+      "version": "0.1.0",
+      "kind": "environment",
+      "source": "scripts/blender_water_tower.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "houses",
+        "grass",
+        "road",
+        "trees"
+      ],
+      "units": "dimensionless",
+      "category": "environment",
+      "dependencies": []
+    },
+    {
+      "id": "model.water_tower",
+      "version": "0.1.0",
+      "kind": "model",
+      "source": "scripts/blender_water_tower.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "storage",
+        "water",
+        "infrastructure"
+      ],
+      "units": "metres",
+      "category": "model",
+      "dependencies": []
+    },
+    {
+      "id": "model.pump_station",
+      "version": "0.1.0",
+      "kind": "model",
+      "source": "scripts/blender_water_tower.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "pump",
+        "water"
+      ],
+      "units": "metres",
+      "category": "model",
+      "dependencies": []
+    },
+    {
+      "id": "model.underground_main",
+      "version": "0.1.0",
+      "kind": "model",
+      "source": "scripts/blender_water_tower.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "pipes",
+        "cutaway",
+        "distribution"
+      ],
+      "units": "metres",
+      "category": "model",
+      "dependencies": []
+    },
+    {
+      "id": "action.assemble_supports",
+      "version": "0.1.0",
+      "kind": "action",
+      "source": "scripts/blender_water_tower.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "construction",
+        "animation"
+      ],
+      "units": "dimensionless",
+      "category": "action",
+      "dependencies": []
+    },
+    {
+      "id": "action.fill_tank",
+      "version": "0.1.0",
+      "kind": "action",
+      "source": "scripts/blender_water_tower.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "water",
+        "animation"
+      ],
+      "units": "dimensionless",
+      "category": "action",
+      "dependencies": []
+    },
+    {
+      "id": "action.pipe_flow",
+      "version": "0.1.0",
+      "kind": "action",
+      "source": "scripts/blender_water_tower.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "water",
+        "animation"
+      ],
+      "units": "dimensionless",
+      "category": "action",
+      "dependencies": []
+    },
+    {
+      "id": "camera.portrait_reveal",
+      "version": "0.1.0",
+      "kind": "camera",
+      "source": "scripts/blender_water_tower.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "portrait",
+        "camera"
+      ],
+      "units": "dimensionless",
+      "category": "camera",
+      "dependencies": []
+    },
+    {
+      "id": "model.house_basic",
+      "version": "0.2.0",
+      "kind": "model",
+      "source": "scripts/blender_assets_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "shared",
+        "housing",
+        "parametric"
+      ],
+      "units": "metres",
+      "category": "model",
+      "dependencies": []
+    },
+    {
+      "id": "model.water_tower_v2",
+      "version": "0.2.0",
+      "kind": "model",
+      "source": "scripts/blender_assets_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "water",
+        "tower"
+      ],
+      "units": "metres",
+      "category": "model",
+      "dependencies": []
+    },
+    {
+      "id": "model.pump_v2",
+      "version": "0.2.0",
+      "kind": "model",
+      "source": "scripts/blender_assets_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "water",
+        "pump"
+      ],
+      "units": "metres",
+      "category": "model",
+      "dependencies": []
+    },
+    {
+      "id": "model.solar_array",
+      "version": "0.2.0",
+      "kind": "model",
+      "source": "scripts/blender_assets_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "solar",
+        "electricity"
+      ],
+      "units": "metres",
+      "category": "model",
+      "dependencies": []
+    },
+    {
+      "id": "model.storage_battery",
+      "version": "0.2.0",
+      "kind": "model",
+      "source": "scripts/blender_assets_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "battery",
+        "energy"
+      ],
+      "units": "metres",
+      "category": "model",
+      "dependencies": []
+    },
+    {
+      "id": "model.underground_main_v2",
+      "version": "0.2.0",
+      "kind": "model",
+      "source": "scripts/blender_assets_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "pipe",
+        "cutaway"
+      ],
+      "units": "metres",
+      "category": "model",
+      "dependencies": []
+    },
+    {
+      "id": "action.assembly_v2",
+      "version": "0.2.0",
+      "kind": "action",
+      "source": "scripts/blender_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "assembly",
+        "animation"
+      ],
+      "units": "dimensionless",
+      "category": "action",
+      "dependencies": []
+    },
+    {
+      "id": "action.flow_v2",
+      "version": "0.2.0",
+      "kind": "action",
+      "source": "scripts/blender_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "water",
+        "electricity"
+      ],
+      "units": "dimensionless",
+      "category": "action",
+      "dependencies": []
+    },
+    {
+      "id": "action.excavation_cutaway",
+      "version": "0.2.0",
+      "kind": "action",
+      "source": "scripts/blender_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "ground",
+        "cutaway"
+      ],
+      "units": "dimensionless",
+      "category": "action",
+      "dependencies": []
+    },
+    {
+      "id": "camera.portrait_follow_v2",
+      "version": "0.2.0",
+      "kind": "camera",
+      "source": "scripts/blender_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "portrait",
+        "camera"
+      ],
+      "units": "dimensionless",
+      "category": "camera",
+      "dependencies": []
+    },
+    {
+      "id": "environment.street_v2",
+      "version": "0.2.0",
+      "kind": "environment",
+      "source": "scripts/blender_assets_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "tags": [
+        "road",
+        "trees",
+        "landscape"
+      ],
+      "units": "dimensionless",
+      "category": "environment",
+      "dependencies": []
+    },
+    {
+      "id": "model.rainwater_system",
+      "version": "0.2.0",
+      "kind": "model",
+      "source": "scripts/blender_assets_v2.py",
+      "license": "original",
+      "status": "prototype",
+      "units": "metres",
+      "category": "model",
+      "dependencies": [],
+      "tags": [
+        "gutter",
+        "first_flush",
+        "storage",
+        "overflow"
+      ]
+    },
+    {
+      "id": "action.transforms",
+      "version": "0.2.0",
+      "kind": "action",
+      "source": "scripts/blender_actions.py",
+      "license": "original",
+      "status": "prototype",
+      "units": "dimensionless",
+      "category": "action",
+      "dependencies": [],
+      "tags": [
+        "move",
+        "rotate",
+        "scale",
+        "explode",
+        "reassemble"
+      ]
+    },
+    {
+      "id": "camera.bounds_fitting",
+      "version": "0.2.0",
+      "kind": "camera",
+      "source": "shortforge/camera_math.py",
+      "license": "original",
+      "status": "prototype",
+      "units": "dimensionless",
+      "category": "camera",
+      "dependencies": [],
+      "tags": [
+        "portrait",
+        "bounds"
+      ]
+    },
+    {
+      "id": "model.suburban_house",
+      "version": "0.3.0",
+      "kind": "model",
+      "source": "scripts/solar_neighbourhood.py",
+      "license": "original",
+      "status": "prototype",
+      "units": "metres",
+      "category": "architecture",
+      "dependencies": ["shortforge/scene_math.py"],
+      "tags": ["facade_openings", "gable_roof", "service_wall"]
+    },
+    {
+      "id": "model.pv_cell_cutaway",
+      "version": "0.3.0",
+      "kind": "model",
+      "source": "scripts/solar_neighbourhood.py",
+      "license": "original",
+      "status": "prototype",
+      "units": "schematic_scale",
+      "category": "mechanism",
+      "dependencies": ["scripts/blender_assets_v2.py"],
+      "tags": ["junction", "charge_carriers", "bypass_diode"]
+    },
+    {
+      "id": "sfx.procedural_library",
+      "version": "0.2.0",
+      "kind": "sfx",
+      "source": "shortforge/sfx.py",
+      "license": "original",
+      "status": "prototype",
+      "units": "dimensionless",
+      "category": "sfx",
+      "dependencies": [],
+      "tags": [
+        "original",
+        "assembly",
+        "water",
+        "electric"
+      ]
+    }
   ]
 }

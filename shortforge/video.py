@@ -8,38 +8,57 @@ from .captions import write_captions
 from .contract import validate_storyboard, WIDTH, HEIGHT, FPS, SECONDS
 
 
-def compose(story: dict, output: str | Path, *, ffmpeg="ffmpeg") -> Path:
+def compose(story: dict, output: str | Path, *, ffmpeg="ffmpeg", caption_timing=None) -> Path:
     validate_storyboard(story)
     out = Path(output).resolve()
     frames = out/"frames"
     wav = out/"audio"/"narration.wav"
-    missing = [i for i in range(1, FPS*SECONDS+1) if not (frames/f"frame_{i:06d}.png").is_file()]
+    duration = story["duration"]
+    missing = [i for i in range(1, story["fps"]*duration+1) if not (frames/f"frame_{i:06d}.png").is_file()]
     if missing:
         raise FileNotFoundError(f"missing {len(missing)} Blender frames; first missing frame: {missing[0]:06d}")
     if not wav.exists():
         raise FileNotFoundError(f"narration not found: {wav}")
     ffmpeg = require_program(ffmpeg)
-    _,ass = write_captions(story,out/"captions")
+    voice_manifest=out/"audio"/"voice_manifest.json"
+    silent=voice_manifest.is_file() and json.loads(voice_manifest.read_text(encoding="utf-8")).get("provider")=="none"
+    aligned=out/"audio" if not silent and (out/"audio"/"beats"/"beat_00.wav").is_file() else None
+    caption_options={"audio_dir":aligned}
+    if caption_timing is not None:
+        caption_options["timing"]=caption_timing
+    _,ass = write_captions(story,out/"captions",**caption_options)
     video = out/"draft.mp4"
+    pending = out/"draft.part.mp4"
     # libass takes a POSIX/escaped filter path; run with the working directory
     # set to the captions folder so Windows drive colons are never parsed as filters.
     ass_filter = "ass=captions.ass"
+    effects=[]
+    audio_filter="[1:a]loudnorm=I=-16:TP=-1.5:LRA=9[aud]"
+    if any(b.get("sfx") for b in story["beats"]):
+        from .sfx import mix_effects
+        effects=["-i",str(mix_effects(story,out/"audio"/"sfx.wav"))]
+        audio_filter=("[1:a]loudnorm=I=-16:TP=-1.5:LRA=9[voice];"
+                      "[voice][2:a]amix=inputs=2:normalize=0,alimiter=limit=0.84:level=0[aud]")
     subprocess.run(
-        [ffmpeg,"-hide_banner","-loglevel","error","-y",
-         "-framerate",str(FPS),"-start_number","1",
+        [ffmpeg,"-hide_banner","-loglevel","error","-xerror","-y",
+         "-framerate",str(story["fps"]),"-start_number","1",
          "-i",str(frames/"frame_%06d.png"),
          "-i",str(wav),
-         "-filter_complex",f"[0:v]{ass_filter}[sub];[1:a]loudnorm=I=-16:TP=-1.5:LRA=9[aud]",
+         *effects,
+         "-filter_complex",f"[0:v]{ass_filter}[sub];{audio_filter}",
          "-map","[sub]","-map","[aud]",
          "-c:v","libx264","-preset","medium","-crf","18",
          "-pix_fmt","yuv420p","-c:a","aac","-b:a","160k",
-         "-t",str(SECONDS),"-movflags","+faststart",str(video)],
+         "-t",str(duration),"-ar","48000","-movflags","+faststart",str(pending)],
         cwd=str(out/"captions"),check=True,
     )
+    pending.replace(video)
     return video
 
 
-def inspect_video(path: str | Path, *, ffprobe="ffprobe") -> dict:
+def inspect_video(path: str | Path, *, ffprobe="ffprobe",
+                  expected_duration: float = SECONDS, expected_fps=FPS,
+                  expected_resolution=(WIDTH,HEIGHT)) -> dict:
     r = subprocess.run(
         [require_program(ffprobe),"-v","error","-show_streams","-show_format",
          "-of","json",str(path)],
@@ -56,9 +75,10 @@ def inspect_video(path: str | Path, *, ffprobe="ffprobe") -> dict:
     n,d = (int(x) for x in ratio.split("/"))
     fps = n/d if d else 0
     checks = {
-        "duration_ok": abs(duration-SECONDS) <= .35,
-        "resolution_ok": (v["width"],v["height"]) == (WIDTH,HEIGHT),
-        "fps_ok": abs(fps-FPS) < .05,
+        "duration_ok": abs(duration-expected_duration) <= .35,
+        "resolution_ok": (v["width"],v["height"]) == tuple(expected_resolution),
+        "fps_ok": abs(fps-expected_fps) < .05,
+        "frame_count_ok": int(v.get("nb_frames",round(duration*fps))) == round(expected_duration*expected_fps),
         "audio_present": True,
     }
     if not all(checks.values()):
