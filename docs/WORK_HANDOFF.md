@@ -46,7 +46,9 @@ Qwen inference on cuda:0. Main venv Python 3.14; isolated TTS runtime retained.
   camera changes serve the spoken explanation, and give moving energy or fluid
   a visible path. Use readable close-ups, physically separate overlapping
   parts, and check the opening for noise. The final review exports are vertical
-  720 × 1280 at 24 fps.
+  720 × 1280 at 24 fps. The episode sets use 32 EEVEE samples after a
+  side-by-side check of the compost wide shot and thermometer close-up
+  against 64 samples. The solar export retains its 64-sample settings.
 - `docs/EPISODE_SCRIPTS.md` contains all ten voiceover drafts with five
   timed picture beats and primary references per topic. The 51–56 second
   runtimes are editorial targets. Measure the final narration before

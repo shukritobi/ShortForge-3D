@@ -42,6 +42,7 @@ class Set:
                           brass=self.gold,glass=self.glass)
         kit.put("ground",cube("episode_floor",(0,1,-.145),(36,36,.19),self.slate))
         scene=bpy.context.scene
+        scene.eevee.taa_render_samples=32
         _area(scene,"Episode broad key",(3,-6,7),(0,0,.8),670,5,(.91,.96,1))
         _area(scene,"Episode soft edge",(-4,4,5),(0,0,1),390,4,(1,.88,.72))
 

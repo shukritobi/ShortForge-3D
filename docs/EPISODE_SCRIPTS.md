@@ -21,7 +21,7 @@ Use an illustrative thermometer for the active pile. Show moisture in both bins 
 | 0–4s | Both are spinning. Which turbine wins by sunset? | Split frame with matched rotors and a sunrise-to-sunset clock. Hide the totals. |
 | 4–14s | I’d have picked the roof. It’s the highest point on the house. Then I watched what the wind did just past the ridge. | Follow one ribbon over the roof. The camera crosses the ridge with it and reveals the wake. |
 | 14–28s | The wind bends around the house and breaks into a rough wake. The roof rotor gets bursts of wind. This second rotor stands in a steadier stream in our test. | Reveal the same incoming wind approaching both sites. Show variable and steadier flow at rotor height. |
-| 28–41s | Here’s where the spinning fooled me. Watch the power traces. One jumps and drops. The other keeps producing between gusts. Add up the energy over the same hours. | Reveal schematic power traces above energy counters. Advance the clock and accumulate each total. |
+| 28–41s | Here’s what fooled me. The roof trace spikes and drops. The other turbine keeps producing between gusts. Add up the energy over the same hours. | Reveal schematic power traces above energy counters. Advance the clock and accumulate each total. |
 | 41–54s | Now you can see how much energy each site delivered. Change the wind direction and the result may change again. Where would you measure the wind first? | Reveal the totals, then rotate the wind arrow and watch the wake move. End on the two rotors again. |
 
 Use clearly illustrative traces without a kilowatt-hour promise. The result belongs to the simulated siting comparison. [DOE small distributed wind FAQ](https://www.energy.gov/cmei/systems/frequently-asked-questions-small-distributed-wind-systems)
@@ -42,7 +42,7 @@ The story presents a dry trap as one cause of an odour. Use an airflow graphic a
 
 | Time | Narration | Picture |
 | --- | --- | --- |
-| 0–4s | Why does a water heater blow cold air? | Match-cut from steam at the shower to a cool exhaust plume beside the tank. |
+| 0–4s | This heater makes hot water and blows cold air. Why? | Match-cut from steam at the shower to a cool exhaust plume beside the tank. |
 | 4–14s | Follow the air into the top of the tank. It passes over a coil, and some of its heat moves into a refrigerant. | Track one air ribbon through the evaporator. Move the heat marker onto the refrigerant side. |
 | 14–26s | The compressor uses electricity to squeeze that refrigerant. Its temperature rises, so now it’s hot enough to give up heat to the water inside the tank. | Cut into the compressor, then follow the hot refrigerant to the tank's heat exchanger. |
 | 26–40s | Look back at the air we started with. It lost heat at the first coil, so it comes out cooler. Meanwhile the water picks up heat at the other end. | Show both heat-transfer points in one split frame. Keep the water and refrigerant paths separate. |
