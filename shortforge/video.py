@@ -20,7 +20,9 @@ def compose(story: dict, output: str | Path, *, ffmpeg="ffmpeg") -> Path:
     if not wav.exists():
         raise FileNotFoundError(f"narration not found: {wav}")
     ffmpeg = require_program(ffmpeg)
-    aligned=out/"audio" if (out/"audio"/"beats"/"beat_00.wav").is_file() else None
+    voice_manifest=out/"audio"/"voice_manifest.json"
+    silent=voice_manifest.is_file() and json.loads(voice_manifest.read_text(encoding="utf-8")).get("provider")=="none"
+    aligned=out/"audio" if not silent and (out/"audio"/"beats"/"beat_00.wav").is_file() else None
     _,ass = write_captions(story,out/"captions",audio_dir=aligned)
     video = out/"draft.mp4"
     # libass takes a POSIX/escaped filter path; run with the working directory

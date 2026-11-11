@@ -16,15 +16,20 @@ def verify(project,story):
     video=project/"draft.mp4"
     report=inspect_video(video,expected_duration=story["duration"],expected_fps=story["fps"],
                          expected_resolution=story["resolution"])
-    run=subprocess.run(["ffmpeg","-hide_banner","-i",str(video),"-vf",
-        "blackdetect=d=0.15:pix_th=0.05","-af","ebur128=peak=true","-f","null","-"],
+    run=subprocess.run(["ffmpeg","-hide_banner","-xerror","-i",str(video),"-vf",
+        "blackdetect=d=0:pix_th=0.05","-af","ebur128=peak=true","-f","null","-"],
         capture_output=True,text=True)
     (project/"decode_loudness.log").write_text(run.stderr,encoding="utf-8")
+    caption_file=project/"captions"/"captions.json"
+    alignment="unavailable"
+    if caption_file.is_file():
+        captions=json.loads(caption_file.read_text(encoding="utf-8"))
+        alignment=captions[0].get("alignment","beat_timeline_estimate") if captions else "unavailable"
     report.update(full_decode_passed=run.returncode==0,
                   black_segments=[line for line in run.stderr.splitlines() if "black_start:" in line],
                   sha256=hashlib.sha256(video.read_bytes()).hexdigest(),
                   human_listening_approval=False,
-                  caption_alignment="waveform-assisted estimate; not forced word alignment")
+                  caption_alignment=alignment)
     (project/"production_quality.json").write_text(json.dumps(report,indent=2))
     print(json.dumps(report,indent=2))
     if run.returncode or report["black_segments"]:raise RuntimeError("Decode/black-frame QA failed")

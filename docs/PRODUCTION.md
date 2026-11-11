@@ -81,6 +81,8 @@ narration and a final limiter. Default storyboards leave effects opt-in.
 renders six additional assembly angles. `scripts/verify_production.py PROJECT STORY`
 checks actual streams, frame count, full decode, black segments and loudness;
 it never sets human listening approval. `--monitor LOG` samples an active render.
+Use `python -m shortforge.cli check VIDEO --storyboard STORY` to check an export
+against its configured duration, resolution and frame rate.
 
 Drive receives review artifacts only; large frame caches stay on the local SSD.
 `outbox/latest` is the current review bundle and previous runs are archived by

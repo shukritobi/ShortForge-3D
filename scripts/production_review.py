@@ -5,7 +5,6 @@ import sys
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from shortforge.topic_packs import build_story
-from shortforge.pc_agent import find_blender
 from shortforge.telemetry import Sampler
 from scripts.one_click_review import OUTPUT,execute,sync_bundle,stamp,copy_if
 
@@ -29,13 +28,16 @@ def main():
             result=execute(topic,[sys.executable,"-m","shortforge.cli","render",str(story),"--out",str(project),
                                   "--preview-frames",numbers],run,sampler)
             results.append(result)
-            for name in ("storyboard.json","contact_sheet.png","scene_manifest.json","quality.json","draft.mp4"):
-                copy_if(project/name,run/topic/name)
+            if result["exit_code"]==0:
+                copy_if(project/"contact_sheet.png",run/f"{topic}_contact_sheet.png")
+                for name in ("storyboard.json","scene_manifest.json"):
+                    copy_if(project/name,run/"diagnostics"/topic/name)
     (run/"run_manifest.json").write_text(json.dumps({"stages":results,"youtube_publishing":False,
         "status":"ready_for_visual_review" if all(r["exit_code"]==0 for r in results) else "failed"},indent=2))
     (run/"performance_report.json").write_text(json.dumps(sampler.report(),indent=2))
-    print(json.dumps(sync_bundle(run,None),indent=2))
-    return int(any(r["exit_code"] for r in results))
+    sync_result=sync_bundle(run,None)
+    print(json.dumps(sync_result,indent=2))
+    return int(sync_result["status"]!="synced" or any(r["exit_code"] for r in results))
 
 
 if __name__=="__main__":raise SystemExit(main())

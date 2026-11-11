@@ -57,6 +57,9 @@ def create_silent_audio(output: str | Path, *, duration: float = 40, ffmpeg="ffm
         "-f", "lavfi", "-i", "anullsrc=r=24000:cl=mono",
         "-t", str(duration), "-c:a", "pcm_s16le", str(path)
     ], check=True)
+    (out / "voice_manifest.json").write_text(
+        json.dumps({"provider":"none","duration":duration})+"\n",encoding="utf-8"
+    )
     return path
 
 
