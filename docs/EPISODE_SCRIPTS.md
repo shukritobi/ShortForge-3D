@@ -21,7 +21,7 @@ Use an illustrative thermometer for the active pile. Show moisture in both bins 
 | 0–4s | Both are spinning. Which turbine wins by sunset? | Split frame with matched rotors and a sunrise-to-sunset clock. Hide the totals. |
 | 4–14s | I’d have picked the roof. It’s the highest point on the house. Then I watched what the wind did just past the ridge. | Follow one ribbon over the roof. The camera crosses the ridge with it and reveals the wake. |
 | 14–28s | The wind bends around the house and breaks into a rough wake. The roof rotor gets bursts of wind. This second rotor stands in a steadier stream in our test. | Reveal the same incoming wind approaching both sites. Show variable and steadier flow at rotor height. |
-| 28–41s | Here’s what fooled me. The roof trace spikes and drops. The other turbine keeps producing between gusts. Add up the energy over the same hours. | Reveal schematic power traces above energy counters. Advance the clock and accumulate each total. |
+| 28–41s | Here’s what fooled me. Power at the roof spikes and drops. The other turbine keeps producing between gusts. Add up the energy over the same hours. | Reveal schematic power traces above energy counters. Advance the clock and accumulate each total. |
 | 41–54s | Now you can see how much energy each site delivered. Change the wind direction and the result may change again. Where would you measure the wind first? | Reveal the totals, then rotate the wind arrow and watch the wake move. End on the two rotors again. |
 
 Use clearly illustrative traces without a kilowatt-hour promise. The result belongs to the simulated siting comparison. [DOE small distributed wind FAQ](https://www.energy.gov/cmei/systems/frequently-asked-questions-small-distributed-wind-systems)
