@@ -43,3 +43,20 @@ SOLAR_EXTRA = [
     "The utility meter sees the difference between what the home consumes and what solar supplies. It does not directly measure every panel.",
     "A battery has two separate limits. Power determines how many loads it can serve at once. Energy determines how long it can keep serving them.",
 ]
+
+# Positions follow the spoken cues in the full script. Compact and extended
+# scripts use their whole-beat cameras because their phrasing differs.
+SOLAR_SHOTS = (
+    ((.40, "pv_contacts", "detail"),),
+    ((.16, "roof_rails", "detail"),),
+    ((.58, "pv_junction", "section"),),
+    ((.30, "pv_junction", "section"),),
+    ((0, "pv_junction", "section"),),
+    ((0, "pv_contacts", "detail"), (.32, "panels", "overhead")),
+    (),
+    ((0, "bypass_diode", "detail"), (.36, "pv_bypass", "section")),
+    ((0, "inverter", "detail"),),
+    ((0, "breaker_detail", "detail"), (.63, "porch_fixture", "detail")),
+    ((.63, "meter_detail", "detail"),),
+    ((0, "battery_detail", "detail"),),
+)

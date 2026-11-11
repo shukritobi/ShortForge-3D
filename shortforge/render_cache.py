@@ -18,7 +18,8 @@ def shot_keys(story, engine):
     prefix=[]
     result=[]
     for beat in story["beats"]:
-        prefix.append({k:beat[k] for k in ("id","start","end","actions","camera")})
+        keys=("id","start","end","actions","camera","shot_cues")
+        prefix.append({k:beat[k] for k in keys if k in beat})
         result.append(digest([engine,story["scene_template"],story["fps"],story["resolution"],prefix]))
     return result
 

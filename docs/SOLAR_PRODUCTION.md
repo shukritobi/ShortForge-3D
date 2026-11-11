@@ -19,25 +19,37 @@ Technical references used for the script:
 - [DOE system design](https://www.energy.gov/cmei/systems/solar-photovoltaic-system-design-basics)
 - [NREL shading testbed](https://docs.nrel.gov/docs/fy16osti/62471.pdf)
 
-## Native narration comes first
+## Measure narration before cutting the shots
 
 1. Create a Solar project in Studio and choose a target duration.
-2. Select **Check narration**. Qwen speaks the script at its recorded pace.
-3. The fitter assigns each shot its measured take duration and a short pause.
-   If the takes exceed the target, the timeline extends rather than compressing
-   speech. Shorten the script if the duration must be exact.
+2. Select **Check narration** to measure the actual Qwen takes.
+3. The fitter assigns each beat the measured take duration at the chosen rate
+   plus a short pause. Shorten or add meaningful script lines for a fixed
+   duration. Studio can extend the timeline when the speech needs more room.
 4. Generate the preview from that timed storyboard, inspect it, then approve.
 5. Render the video. Unchanged voice samples remain cached.
 
-New solar storyboards use `narration_timing: native`. Their fitting filters
-contain no `atempo`. `scripts/verify_native_voice.py PROJECT` compares every
-fitted spoken PCM prefix against its raw take. The measured 120-second example
-has 249 words and 12 distinct shots. Raw speech totals 117.20 seconds, leaving
-2.80 seconds for pauses across the timeline.
+Generated solar storyboards default to `narration_timing: native`.
+`scripts/verify_native_voice.py PROJECT` compares their fitted spoken PCM
+prefixes against the raw takes. For the current director cut, start with
+`examples/solar_neighbourhood_112s_v2.json`. It applies one pitch-preserving
+`narration_rate: 1.07` across all 12 takes. Use that pace as the starting point
+for subsequent reviews. The raw takes remain cached. The 120-second example
+preserves the original native-speed edit.
 
-Earlier storyboards retain their legacy timing policy so historical projects
-and tests remain reproducible. To migrate one, set `narration_timing` to
-`native`, run narration measurement, and review the resulting timeline.
+The first raw take had a high-frequency burst around 7.8 kHz before speech.
+The director cut removes 1.11 seconds from that exact WAV and uses a 15 ms
+fade-in. The storyboard stores the WAV fingerprint so a fresh take is safe
+from an old trim. Check the source and rendered opening independently when
+the voice, model, or first line changes.
+
+For the full solar script, `shot_cues` gives each beat a short list of
+allowlisted camera subjects and positions within the beat. After measuring
+the audio, check these cuts against the spoken terms. The current edit moves
+from the roof to the metal grid, then to the mounting gap and silicon junction.
+The equipment sequence lands on the inverter, breaker bank, porch diffuser,
+meter and battery. The bypass scene reveals the diode first and then shows its
+path around the central shaded group.
 
 ## Model review
 
@@ -52,10 +64,11 @@ This separates the luminaire from the electrical enclosures and improves
 equipment readability. Wall-panel interiors are explanatory dead fronts.
 These models are not installation instructions or clearance specifications.
 
-The street has consistent setbacks, driveways, a sidewalk, gardens, varied
-trees, a moving car and a coasting cyclist. Background objects remain separate
-from the semantic hero-house camera bounds. Mechanism stages use explicit
-editorial cuts, avoiding a camera flight through the gap between sets.
+The four neighbours reuse the main house's facade openings, trim and gable
+construction. Siding, setbacks, gardens, three flashed chimneys and scattered
+blade meshes add variation. The car and cyclist share the street scale.
+Background houses stay outside the main camera bounds. The two PV demonstration
+models sit on a small separate set, clear of the street.
 
 Check the six story frames and the additional audit angles before full renders.
 The Blender audit measures 12 panel/rail contacts, meter attachment, three

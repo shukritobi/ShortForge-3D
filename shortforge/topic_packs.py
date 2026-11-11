@@ -63,7 +63,7 @@ SOLAR = [
 ("Together these parts turn daylight into useful household electricity.", "house","highlight","reveal"),
 ]
 from .rainwater_pack import RAINWATER, DETAILS
-from .solar_explainer import SOLAR_MECHANISMS, SOLAR_EXTRA
+from .solar_explainer import SOLAR_MECHANISMS, SOLAR_EXTRA, SOLAR_SHOTS
 PACKS = {
     "rainwater": {"title":"How a Home Harvests Rainwater",
                   "aliases":("rainwater","rain harvesting"),"beats":RAINWATER,"details":DETAILS},
@@ -184,11 +184,16 @@ def detailed_solar_story(duration, fps, profile, audience, complexity):
     for index, (line, target, action, camera, label) in enumerate(steps):
         start, end = (round(duration*i/len(steps), 5) for i in (index,index+1))
         actions = [{"type":action,"target":target}]
+        if index == 0:
+            actions.append({"type":"appear","target":"panels"})
         if target == "distribution":
             actions.append({"type":"appear","target":"lights"})
         beats.append({"id":f"beat_{index+1:02d}","start":start,"end":end,
                       "problem":label,"solution":line,"narration":line,"camera":camera,
                       "actions":actions,"callout":label})
+        if 100 <= duration <= 130 and SOLAR_SHOTS[index]:
+            beats[-1]["shot_cues"] = [{"at":at,"target":subject,"camera":mode}
+                                     for at,subject,mode in SOLAR_SHOTS[index]]
     return validate_story_v2({"version":2,"title":"Inside a Solar-Powered Home",
         "duration":duration,"fps":fps,"resolution":{"preview":[360,640],"draft":[720,1280],"final":[1080,1920]}[profile],
         "audience":audience,"complexity":complexity,"scene_template":"solar_home",

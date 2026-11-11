@@ -214,6 +214,8 @@ Start `scripts/ShortForge-Studio.bat` for the local review dashboard, or
 See [production workflow](docs/PRODUCTION.md), [acceptance evidence](docs/ACCEPTANCE.md)
 and [work handoff](docs/WORK_HANDOFF.md). Publishing remains disabled.
 
-The detailed solar pack has a suburban set, a magnified photovoltaic cell and
-native-speed narration. Follow [the solar workflow](docs/SOLAR_PRODUCTION.md)
-to measure the voice, preview the timed shots, and render the approved project.
+The detailed solar pack has a suburban set, enlarged photovoltaic models and
+camera cuts timed to the narration. The [112-second director cut](examples/solar_neighbourhood_112s_v2.json)
+uses a uniform 1.07× speaking rate. Follow [the solar workflow](docs/SOLAR_PRODUCTION.md)
+to measure the voice and preview the timed shots. See the
+[episode backlog](docs/TOPIC_BACKLOG.md) for researched hooks and shot plans.

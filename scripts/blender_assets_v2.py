@@ -223,19 +223,39 @@ class Kit:
         # Two columns by three rows, flush with the right gable roof.
         # Pitched panels and concealed rails have the same roof angle.
         panel_assets=[]
+        contact_subject=[]
+        rail_subject=[]
         for col,local_x in enumerate((.48,1.17)):
             for row,local_y in enumerate((-.82,0,.82)):
                 centre_y=1.0+local_y
                 centre=roof_surface_point(local_x,centre_y,0,0,offset=.1675)
-                panel_assets.append(cube(
+                panel=cube(
                     f"pv_{col}_{row}",centre,
-                    (.69,.72,.055),self.colors["panels"],tilt=ROOF_PITCH))
+                    (.69,.72,.055),self.colors["panels"],tilt=ROOF_PITCH)
+                panel_assets.append(panel)
+                if (col,row)==(1,0):
+                    contact_subject.append(panel)
+                    rail_subject.append(panel)
                 # Two thin silver standoff rails on the upper roof surface.
                 for du in (-.20,.20):
                     px,p_y,p_z=roof_surface_point(local_x,centre_y,du,0,offset=.1125)
-                    panel_assets.append(cube(
+                    rail=cube(
                         f"pv_mount_{col}_{row}_{int(du*100)}",(px,p_y,p_z),
-                        (.065,.69,.055),self.colors["dark"],tilt=ROOF_PITCH))
+                        (.065,.69,.055),self.colors["dark"],tilt=ROOF_PITCH)
+                    panel_assets.append(rail)
+                    if (col,row)==(1,0):
+                        rail_subject.append(rail)
+                for index in range(9):
+                    u=-.27+index*.0675
+                    p0=roof_surface_point(local_x,centre_y,u,-.33,offset=.200)
+                    p1=roof_surface_point(local_x,centre_y,u,.33,offset=.200)
+                    panel_assets.append(pipe(f"pv_finger_{col}_{row}_{index}",
+                                             [p0,p1],self.colors["steel"],.002))
+                for index,v in enumerate((-.24,.24)):
+                    p0=roof_surface_point(local_x,centre_y,-.30,v,offset=.203)
+                    p1=roof_surface_point(local_x,centre_y,.30,v,offset=.203)
+                    panel_assets.append(pipe(f"pv_busbar_{col}_{row}_{index}",
+                                             [p0,p1],self.colors["steel"],.004))
                 # Subtle cell divisions, following the physical roof normal.
                 for u in (-.12,.12):
                     p0=roof_surface_point(local_x,centre_y,u,-.34,offset=.197)
@@ -254,6 +274,10 @@ class Kit:
 
         electrical(self)
         cell_stage(self)
+        self.subjects.update(pv_contacts=contact_subject,roof_rails=rail_subject)
+        self.camera_directions.update(pv_contacts=(2,-2,7),roof_rails=(7,-4,1.4))
+        self.camera_minimum.update(pv_contacts=1.35,roof_rails=1.45)
+        self.cut_targets.update({"pv_contacts","roof_rails"})
         self.paths["sun"]=[(-5.3,4.2,9.2),(.85,1.0,3.5)]
 
         # Stable semantic camera anchors, not averages across unrelated houses.

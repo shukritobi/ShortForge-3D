@@ -18,6 +18,9 @@ SCENE_TEMPLATES = {
                             "pv_cell", "pv_light", "pv_carriers", "pv_shade", "pv_bypass"}),
 }
 CAMERAS = frozenset({"establish", "detail", "section", "follow", "overhead", "reveal"})
+SHOT_SUBJECTS = {"solar_home": frozenset({"pv_contacts", "roof_rails", "pv_junction",
+                                           "bypass_diode", "breaker_detail", "porch_fixture",
+                                           "meter_detail", "battery_detail"})}
 ACTION_TYPES = frozenset({"appear", "assemble", "highlight", "flow", "pulse", "cutaway",
                           "disappear","move","rotate","scale","explode","reassemble"})
 BEAT_KEYS = frozenset({"id", "start", "end", "problem", "solution",
@@ -43,8 +46,12 @@ def validate_story_v2(story: dict) -> dict:
         raise StoryV2Error("fps must be 24 or 30")
     if story.get("resolution") not in ([360,640],[720,1280],[1080,1920]):
         raise StoryV2Error("unsupported portrait resolution")
-    if story.get("narration_timing", "legacy") not in ("legacy", "native"):
-        raise StoryV2Error("narration_timing must be legacy or native")
+    policy=story.get("narration_timing", "legacy")
+    if policy not in ("legacy", "native", "uniform"):
+        raise StoryV2Error("narration_timing must be legacy, native or uniform")
+    rate=story.get("narration_rate",1.0)
+    if type(rate) not in (float,int) or not 1<=rate<=1.20 or (rate!=1 and policy!="uniform"):
+        raise StoryV2Error("narration_rate must be 1.0–1.20 and use uniform timing above 1.0")
     scene = story.get("scene_template")
     if not isinstance(scene, str) or scene not in SCENE_TEMPLATES:
         raise StoryV2Error(f"scene_template must be registered: {sorted(SCENE_TEMPLATES)}")
@@ -69,6 +76,29 @@ def validate_story_v2(story: dict) -> dict:
         if abs(start-cursor) > 0.0001 or end-start < 2.5 or end > duration+.0001:
             raise StoryV2Error(f"beat {key}: non-contiguous or too short")
         cursor = end
+        trim=beat.get("voice_trim_start",0)
+        if type(trim) not in (float,int) or not 0<=trim<=2 or (trim and policy not in ("native","uniform")):
+            raise StoryV2Error(f"beat {key}: invalid voice lead-in trim")
+        if trim and not re.fullmatch(r"[a-f0-9]{64}",str(beat.get("voice_trim_sha256",""))):
+            raise StoryV2Error(f"beat {key}: voice lead-in trim requires the reviewed WAV fingerprint")
+        shots=beat.get("shot_cues",[])
+        if not isinstance(shots,list) or len(shots)>5:
+            raise StoryV2Error(f"beat {key}: invalid shot cues")
+        previous=-1
+        previous_frame=round(start*story["fps"])-1
+        for shot in shots:
+            if not isinstance(shot,dict) or set(shot)!={"at","target","camera"}:
+                raise StoryV2Error(f"beat {key}: unsafe shot cue")
+            at,target,view=shot["at"],shot["target"],shot["camera"]
+            if (type(at) not in (int,float) or not 0<=at<=.9 or at<=previous or
+                not isinstance(target,str) or target not in SCENE_TEMPLATES[scene]|SHOT_SUBJECTS.get(scene,frozenset()) or
+                not isinstance(view,str) or view not in CAMERAS):
+                raise StoryV2Error(f"beat {key}: invalid shot cue target, camera or position")
+            cut_frame=round((start+at*(end-start))*story["fps"])
+            if cut_frame<=previous_frame or (at and cut_frame==round(start*story["fps"])):
+                raise StoryV2Error(f"beat {key}: shot cues must occupy separate frames")
+            previous_frame=cut_frame
+            previous=at
         callout=beat.get("callout")
         if callout is not None and (not isinstance(callout,str) or not callout.strip() or
                                     len(callout)>42 or any(ord(c)<32 for c in callout)):

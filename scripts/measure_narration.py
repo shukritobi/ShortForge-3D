@@ -24,7 +24,7 @@ def main():
         if not report.is_file():raise
         failed=True
     else:failed=False
-    if failed or story.get("narration_timing")=="native":
+    if failed or story.get("narration_timing") in ("native","uniform"):
         measured=json.loads(report.read_text())
         (a.out/"storyboard_before_timing.json").write_bytes(a.story.read_bytes())
         story=retime_from_report(story,measured,extend=a.extend_to_fit)

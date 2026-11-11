@@ -1,6 +1,7 @@
 """Procedural suburban set, service equipment and enlarged PV teaching models."""
 
 import math
+import random
 
 import bpy
 
@@ -108,6 +109,52 @@ def _wheel(kit, name, x, y, z, radius, width):
     return [tire,hub]
 
 
+def _chimney(kit, name, x, y):
+    brick=material("solar_chimney_brick",(.32,.12,.073),roughness=.86)
+    local_x=-.83
+    base=roof_height(local_x)+.085/math.cos(ROOF_PITCH)
+    px=x+local_x
+    return [cube(name+"_flashing",(px,y,base),(.45,.42,.042),kit.colors["steel"],tilt=-ROOF_PITCH),
+            cube(name+"_shaft",(px,y,base+.27),(.32,.30,.64),brick),
+            cube(name+"_cap",(px,y,base+.61),(.39,.37,.066),kit.colors["concrete"]),
+            cube(name+"_flue",(px,y,base+.66),(.17,.15,.048),kit.colors["dark"])]
+
+
+def _grass_patch(kit, name, centre, size, seed):
+    rng=random.Random(seed)
+    vertices=[]
+    faces=[]
+    for _ in range(round(720*size[0]*size[1])):
+        x=centre[0]+rng.uniform(-size[0]/2,size[0]/2)
+        y=centre[1]+rng.uniform(-size[1]/2,size[1]/2)
+        h=rng.uniform(.028,.083)
+        dx,dy=(rng.uniform(-.019,.019) for _ in range(2))
+        k=len(vertices)
+        vertices.extend(((x-.004,y,.012),(x+.004,y,.012),(x+dx,y+dy,.012+h)))
+        faces.append((k,k+1,k+2))
+    mesh=bpy.data.meshes.new(name)
+    mesh.from_pydata(vertices,[],faces)
+    blade=material("solar_grass_blades",(.074,.24,.039),roughness=.96)
+    mesh.materials.append(blade)
+    obj=bpy.data.objects.new(name,mesh)
+    bpy.context.collection.objects.link(obj)
+    kit.put("ground",obj)
+
+
+def _lawn_texture(finish):
+    tree=finish.node_tree
+    shader=tree.nodes.get("Principled BSDF")
+    noise=tree.nodes.new("ShaderNodeTexNoise")
+    noise.inputs["Scale"].default_value=56
+    ramp=tree.nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position=.25
+    ramp.color_ramp.elements[0].color=(.091,.212,.044,1)
+    ramp.color_ramp.elements[1].position=.78
+    ramp.color_ramp.elements[1].color=(.143,.287,.072,1)
+    tree.links.new(noise.outputs["Fac"],ramp.inputs["Fac"])
+    tree.links.new(ramp.outputs["Color"],shader.inputs["Base Color"])
+
+
 def street(kit):
     kit.colors.update({
         "roof": material("solar_graphite_roof",(.11,.145,.18),roughness=.73),
@@ -126,17 +173,23 @@ def street(kit):
         "road": material("solar_asphalt",(.070,.082,.091),roughness=.89),
         "panels": material("solar_deep_pv",(.017,.055,.14),metallic=.24,roughness=.29),
     })
+    _lawn_texture(kit.colors["ground"])
     kit.scene_ground()
     concrete=kit.colors["concrete"]
     kit.put("ground",cube("solar_sidewalk",(0,-4.98,.065),(33,1.03,.13),concrete),
             cube("solar_curb",(0,-5.49,.065),(33,.11,.13),kit.colors["white"]))
     for i,x in enumerate((-9,-4.6,4.6,9)):
         kit.put("ground",cube(f"driveway_{i}",(x,-2.68,.03),(1.25,4.5,.055),concrete))
-    for i,(x,y,h) in enumerate(((-3.25,.5,1.8),(-6.8,-2.6,1.25),(3.35,.8,1.55),(6,-2.6,1.4),(-5.9,4.1,2.3),(6.3,4.5,2.35))):
+    for i,(x,y,h) in enumerate(((-3.25,.5,1.8),(-6.8,-2.6,1.25),(3.55,3.05,1.55),(6,-2.6,1.4),(-5.9,4.1,2.3),(6.3,4.5,2.35))):
         kit.put("ground",*_plant(kit,f"street_tree_{i}",x,y,h))
     for i,(x,y,tint) in enumerate(((-5.15,1.8,(.47,.62,.57)),(5.35,2.1,(.66,.42,.31)),
                                    (-10,2.4,(.58,.63,.72)),(10.2,2.7,(.57,.52,.38)))):
-        kit.put("ground",*kit.house(f"neighbour_{i}",x,y,tint=tint))
+        name=f"neighbour_{i}"
+        kit.put("ground",*detailed_house(kit,name,x,y,material(name+"_siding",tint)))
+        if i in (0,2,3):
+            kit.put("ground",*_chimney(kit,name+"_chimney",x,y+.44))
+        kit.put("ground",cube(name+"_stoop",(x-.735,y-1.49,.075),(1.15,.57,.15),concrete),
+                cube(name+"_walk",(x-.735,(y-1.77-4.46)/2,.032),(.69,y-1.77+4.46,.055),concrete))
     kit.put("house",*detailed_house(kit,"solar_main",0,1,material("solar_warm_siding",(.68,.49,.30))))
     kit.subjects["house"]=list(kit.groups["house"])
     path=cube("solar_front_walk",(-.73,-2.52,.037),(.87,4.4,.06),concrete)
@@ -151,6 +204,14 @@ def street(kit):
     kit.put("ground",cube("solar_front_bed",(.83,-.91,.048),(1.06,.55,.075),garden))
     for i in range(5):
         kit.put("ground",sphere(f"front_shrub_{i}",(.42+i*.20,-.93,.14),.12,kit.colors["leaf_dark"]))
+    for i,(x,y,count) in enumerate(((-4.62,.03,4),(5.96,.28,5),(-9.4,.59,4))):
+        kit.put("ground",cube(f"neighbour_bed_{i}",(x,y,.034),(1.03,.48,.065),garden))
+        for shrub in range(count):
+            kit.put("ground",sphere(f"neighbour_shrub_{i}_{shrub}",
+                                    (x-.37+shrub*.18,y,.14),.11,kit.colors["leaf_dark"]))
+    for i,(x,y,w,d) in enumerate(((.75,-1.65,1.04,.75),(-2,-2.0,.69,1.85),
+                                   (-4.05,-.85,.73,1.0),(6.65,-1.38,1.05,1.38))):
+        _grass_patch(kit,f"grass_tufts_{i}",(x,y),(w,d),400+i)
 
     car=material("solar_car_paint",(.48,.065,.03),metallic=.35,roughness=.33)
     body=[cube("car_body",(0,0,.28),(1.74,.75,.29),car),
@@ -218,6 +279,9 @@ def electrical(kit):
             cube("battery_seam",(2.55,1.767,.85),(.59,.022,.035),dark),
             cube("battery_status",(2.55,1.761,1.08),(.18,.025,.12),screen),
             pipe("battery_conduit",[(1.62,-.19,1.10),(1.82,-.19,.30),(1.82,2.05,.30),(2.23,2.05,.48)],dark,.026))
+    for i in range(4):
+        kit.put("battery",cube(f"battery_charge_bar_{i}",(2.49+i*.04,1.745,1.07),
+                               (.027,.011,.048),kit.colors["white"] if i<3 else dark))
 
     # A separate porch luminaire on the front wall, away from the service wall.
     kit.put("lights",cube("porch_light_mount",(-.735,-.371,2.36),(.26,.042,.15),dark),
@@ -228,6 +292,15 @@ def electrical(kit):
     kit.subjects["inverter"]=kit.groups["inverter"][:4]
     kit.subjects["distribution"]=kit.groups["distribution"][:3]+kit.groups["lights"]
     kit.subjects["meter"]=kit.groups["meter"][:3]
+    kit.subjects.update(breaker_detail=[o for o in kit.groups["distribution"] if o.type=="MESH"],
+                        porch_fixture=kit.groups["lights"]+[
+                            o for o in kit.groups["house"] if "door_head" in o.name],
+                        meter_detail=kit.groups["meter"][:3],battery_detail=kit.groups["battery"][:4])
+    kit.camera_directions={"inverter":(7,-3.4,2.8),"breaker_detail":(8,-2,2),
+                           "porch_fixture":(1,-8,2.3),"meter_detail":(9,-2,2),
+                           "battery_detail":(.7,-6,5)}
+    kit.camera_minimum={"inverter":2.1,"breaker_detail":1.65,"porch_fixture":1.65,
+                        "meter_detail":1.5,"battery_detail":2.4}
 
 
 def cell_stage(kit):
@@ -238,8 +311,8 @@ def cell_stage(kit):
     silicon_b=material("pv_silicon_bottom",(.35,.10,.19),roughness=.49)
     coating=material("pv_front_surface",(.038,.097,.16),roughness=.33)
     metal=kit.colors["steel"]
-    kit.put("ground",cube("pv_studio_base",(x,1,-.14),(60,60,.15),slate))
-    kit.put("ground",cube("pv_studio_backdrop",(x,5,2.85),(9,.24,6),slate))
+    kit.put("ground",cube("pv_studio_base",(x+2.5,1,-.14),(17,18,.15),slate))
+    kit.put("ground",cube("pv_studio_backdrop",(x+2.5,5,2.85),(17,.24,6),slate))
     bpy.ops.object.light_add(type="AREA",location=(x-2,-3,6))
     light=bpy.context.object
     light.name="pv_studio_key"
@@ -272,10 +345,22 @@ def cell_stage(kit):
     kit.put("pv_light",pipe("macro_light_guide",[(x-.60,-.73,2.01),(x-.29,-.65,1.20)],kit.colors["sun"],.019))
     kit.put("pv_carriers",pipe("macro_electron_guide",[(x-.14,-.665,.96),(x+.59,-.666,1.12)],silicon_a,.017))
     kit.put("pv_shade",cube("pv_shadow_patch",roof_surface_point(1.17,.18,0,0,offset=.205),(.26,.36,.018),slate,tilt=ROOF_PITCH))
-    bypass=[(x-.92,-.68,.52),(x-.92,-.77,.31),(x+.89,-.77,.31),(x+.89,-.68,.52)]
+    # The diode spans the shaded series group, while the other groups remain in circuit.
+    bx=x+5
+    module=cube("bypass_module_frame",(bx,0,.81),(2.74,1.08,.13),metal)
+    groups=[]
+    for group in range(3):
+        cx=bx+(group-1)*.88
+        for cell in range(3):
+            groups.append(cube(f"bypass_group_{group}_cell_{cell}",(cx+(cell-1)*.257,0,.90),
+                               (.244,.88,.045),slate if group==1 else silicon_a))
+        groups.append(pipe(f"bypass_group_bus_{group}",[(cx-.37,-.38,.93),(cx+.37,-.38,.93)],metal,.012))
+    bypass=[(bx-.43,-.38,.94),(bx-.43,-.66,.94),(bx-.43,-.68,.60),
+            (bx+.43,-.68,.60),(bx+.43,-.66,.94),(bx+.43,-.38,.94)]
     kit.put("pv_bypass",pipe("macro_bypass_wire",bypass,kit.colors["brass"],.023),
-            cube("macro_bypass_diode",(x,-.77,.31),(.31,.11,.098),kit.colors["dark"]),
-            cube("macro_diode_band",(x+.087,-.77,.31),(.044,.113,.10),kit.colors["white"]))
+            cube("macro_bypass_diode",(bx,-.68,.60),(.26,.105,.098),kit.colors["dark"]),
+            cube("macro_diode_band",(bx+.076,-.68,.60),(.031,.108,.10),kit.colors["white"]),
+            module,*groups)
     kit.paths.update(pv_light=[(x-.60,-.73,2.01),(x-.29,-.65,1.20),(x-.14,-.665,.96)],
                      pv_carriers=[(x-.14,-.665,.96),(x+.59,-.666,1.12)],pv_bypass=bypass)
     kit.extra_flows={"pv_carriers": [([(x-.14,-.671,.96),(x-.64,-.674,.74)],(.97,.18,.21))]}
@@ -283,5 +368,11 @@ def cell_stage(kit):
     kit.cut_targets={"pv_cell","pv_light","pv_carriers","pv_bypass"}
     kit.shot_only={"pv_light","pv_carriers","pv_shade","pv_bypass"}
     for target in kit.cut_targets:
-        kit.subjects[target]=kit.groups["pv_cell"]+kit.groups[target] if target!="pv_cell" else kit.groups["pv_cell"]
+        kit.subjects[target]=(kit.groups["pv_cell"]+kit.groups[target]
+                              if target in {"pv_light","pv_carriers"} else kit.groups[target])
     kit.subjects["pv_shade"]=kit.groups["panels"]
+    kit.subjects["pv_junction"]=[o for o in kit.groups["pv_cell"] if "silicon" in o.name or "junction" in o.name]
+    kit.subjects["bypass_diode"]=kit.groups["pv_bypass"][:3]
+    kit.camera_directions.update(pv_junction=(1.5,-8,2.4),pv_bypass=(.7,-7,4),bypass_diode=(.4,-8,4))
+    kit.camera_minimum.update(pv_junction=1.7,bypass_diode=2.1)
+    kit.cut_targets.update({"pv_junction","bypass_diode"})

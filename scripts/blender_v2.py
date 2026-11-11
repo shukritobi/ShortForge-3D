@@ -80,7 +80,7 @@ def camera_pose(cam, position, focus, at):
     cam.keyframe_insert(data_path="rotation_euler",frame=at)
 
 
-def set_camera_motion(scene, cam, kit, beat, previous_at):
+def set_camera_motion(scene, cam, kit, beat, previous_at, *, hard_cut=False):
     target=beat["actions"][0]["target"]
     # A focus target is an explicit subject, not an average of multiple
     # unrelated buildings or world-origin curve objects.
@@ -95,7 +95,7 @@ def set_camera_motion(scene, cam, kit, beat, previous_at):
         "reveal":Vector((6.5,-13.5,8.2)),
     }
     mode=beat["camera"]
-    offset=modes[mode]
+    offset=Vector(getattr(kit,"camera_directions",{}).get(target,modes[mode]))
     objects=kit.subjects.get(target,kit.groups.get(target,[]))
     if mode=="establish":
         objects=getattr(kit,"establish_subjects",{}).get(target,objects)
@@ -114,7 +114,8 @@ def set_camera_motion(scene, cam, kit, beat, previous_at):
         tan_y=cam.data.sensor_height/(2*cam.data.lens)
         tan_x=tan_y*scene.render.resolution_x/scene.render.resolution_y
         distance=fit_distance([(p.dot(right),p.dot(up),p.dot(towards)) for p in relative],tan_x,tan_y)
-        offset=towards*max(distance,3.8)
+        minimum=getattr(kit,"camera_minimum",{}).get(target,3.8)
+        offset=towards*max(distance,minimum)
     if target=="ground" and target not in kit.focus:
         anchor=Vector((0,-3,0))
     if mode=="section":
@@ -126,7 +127,7 @@ def set_camera_motion(scene, cam, kit, beat, previous_at):
     # rotation interpolates smoothly instead of snapping to a new target.
     previous_focus=getattr(kit,"last_camera_focus",None)
     cut_targets=getattr(kit,"cut_targets",set())
-    cut = target in cut_targets or getattr(kit,"last_camera_target",None) in cut_targets
+    cut = hard_cut or target in cut_targets or getattr(kit,"last_camera_target",None) in cut_targets
     if previous_focus is None:
         previous_focus=anchor
     camera_pose(cam,anchor+offset if cut else cam.location.copy(),anchor if cut else previous_focus,start)
@@ -270,7 +271,19 @@ def animate(story,kit,cam,scene):
     for beat in story["beats"]:
         start=frame(beat["start"],story["fps"])
         end=frame(beat["end"],story["fps"])-1
-        set_camera_motion(scene,cam,kit,beat,start)
+        cues=beat.get("shot_cues",[])
+        if not cues:
+            set_camera_motion(scene,cam,kit,beat,start)
+        else:
+            length=beat["end"]-beat["start"]
+            opening={"at":0,"target":beat["actions"][0]["target"],"camera":beat["camera"]}
+            shots=cues if cues[0]["at"]==0 else [opening,*cues]
+            for index,shot in enumerate(shots):
+                until=shots[index+1]["at"] if index+1<len(shots) else 1
+                segment={"start":beat["start"]+shot["at"]*length,
+                         "end":beat["start"]+until*length,"camera":shot["camera"],
+                         "actions":[{"target":shot["target"]}]}
+                set_camera_motion(scene,cam,kit,segment,start,hard_cut=True)
         for action in beat["actions"]:
             typ,target=action["type"],action["target"]
             for dependency in kit.dependencies.get(target,[]):

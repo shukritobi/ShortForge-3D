@@ -88,18 +88,19 @@ def command_for(p,stage,tts="qwen"):
         raise ValueError("Unknown stage")
     if tts not in ("qwen","none"):
         raise ValueError("Choose Qwen narration or a silent technical export")
-    if stage=="audio" and tts=="qwen" and story.get("narration_timing")=="native":
+    policy=story.get("narration_timing")
+    if stage=="audio" and tts=="qwen" and policy in ("native","uniform"):
         return [sys.executable,"-u",str(ROOT/"scripts"/"measure_narration.py"),str(p/"storyboard.json"),
                 "--out",str(p),"--extend-to-fit"]
     if stage=="full":
         approval=p/"approval.json"
         if not approval.is_file() or json.loads(approval.read_text()).get("revision")!=revision(p):
             raise ValueError("Approve the current preview before full rendering")
-        if tts=="qwen" and story.get("narration_timing")=="native":
+        if tts=="qwen" and policy in ("native","uniform"):
             voice=p/"audio"/"voice_manifest.json"
             measured=p/"audio"/"tts_input.json"
             if (not voice.is_file() or not measured.is_file() or
-                read_json(voice).get("timing_policy")!="native" or read_json(measured)!=story):
+                read_json(voice).get("timing_policy")!=policy or read_json(measured)!=story):
                 raise ValueError("Check narration first to fit shots to the natural voice, then preview and approve the timed storyboard")
     if stage=="compose":
         receipt=p/"rendered_visuals.json"

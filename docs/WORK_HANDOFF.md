@@ -7,7 +7,35 @@ Starting remote was 8acb352. No merging or YouTube publication is authorized.
 Actual machine: Blender 4.5.2 LTS, FFmpeg 7.1.1, RTX 4070 SUPER 12 GB,
 Qwen inference on cuda:0. Main venv Python 3.14; isolated TTS runtime retained.
 
-Current revision: `scripts/solar_neighbourhood.py` has the detailed house,
+## Current direction
+
+- Start from `examples/solar_neighbourhood_112s_v2.json` and
+  `output/solar_director`. The user liked the previous cut's direction and asked
+  for slightly faster, consistent narration, quieter openings, clearer
+  camera-to-narration timing, and a coherent, detailed neighbourhood.
+- The director cut uses one pitch-preserving 1.07× adjustment across all 12
+  cached Qwen takes. Fill gaps with a relevant explanation and adjust shot
+  lengths to the voice. Avoid per-beat speed changes. The opening hiss was
+  present in the raw first take, near 7.8 kHz. A 1.11-second trim applies only
+  to the fingerprinted WAV. In a 7–8.5 kHz check, the old burst measured
+  −33.2 dBFS and the revised first 150 ms measured −83.2 dBFS.
+- Build a visual for the precise mechanism, then land the camera on it when
+  the narration names it. The current edit uses the roof contacts and rail
+  gap, the silicon layers and junction, a diode around a shaded group, and
+  separate shots for the breaker bank, porch fixture, meter and battery.
+  Check foreground obstructions at the actual camera angle.
+- Reuse the hero house's door and window openings, wall trim, roof and
+  proportions across neighbouring houses. Vary the siding, planting, lawn
+  tufts and chimney placement. Keep electrical hardware spatially separate
+  from the porch light. See `docs/SOLAR_PRODUCTION.md`.
+- `docs/TOPIC_BACKLOG.md` holds ten researched pitches with hooks, visual beats
+  and source links. Start with the compost-bin comparison, then home wind and
+  the sink trap. Open with a visible contradiction, use a cutaway to explain
+  the mechanism, then change one variable and return to the opening image.
+
+## Previous checkpoint
+
+`scripts/solar_neighbourhood.py` has the detailed house,
 separate porch light and service wall, street actors and enlarged PV stage.
 See `docs/SOLAR_PRODUCTION.md`. New example `examples/solar_neighbourhood_120s_v2.json`
 is the measured 249-word, 12-shot script. All 12 raw Qwen takes match the fitted
