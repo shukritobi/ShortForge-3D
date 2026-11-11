@@ -211,16 +211,14 @@ class Kit:
         All coordinates are metres and local to the main house centre.
         Visible model parts stay registered to the storyboard's semantic targets.
         """
-        self.scene_ground()
+        from solar_neighbourhood import street, electrical, cell_stage
+        street(self)
         self.dependencies={"sun":["house"],"panels":["house"],
                            "inverter":["house","panels"],"battery":["house","inverter"],
                            "meter":["house","inverter"],"grid":["house","inverter","meter"],
-                           "lights":["house","inverter"]}
-        self.put("house",*self.house("solar_main",0,1.0))
-        self.subjects["house"]=list(self.groups["house"])
-        for i,(dx,dy) in enumerate(((-8,5),(-11,2),(9,6))):
-            self.put("house",*self.house(f"nearby_{i}",dx,dy,
-                         tint=(.79,.78,.68+.025*i)))
+                           "lights":["house","inverter"],"distribution":["house","panels","inverter"],
+                           "pv_light":["pv_cell"],"pv_carriers":["pv_cell"],
+                           "pv_shade":["house","panels"],"pv_bypass":["pv_cell"]}
 
         # Two columns by three rows, flush with the right gable roof.
         # Pitched panels and concealed rails have the same roof angle.
@@ -254,58 +252,9 @@ class Kit:
         # Sun is a small environmental cue, not a giant disc behind the roof.
         self.put("sun",sphere("sun_ball",(-5.3,4.2,9.2),.65,self.colors["sun"]))
 
-        # Distinct visible wire routes: DC roof -> wall-mounted inverter,
-        # AC inverter -> meter -> home, and optional battery / grid interfaces.
-        self.put("inverter",
-                 cube("inverter",(1.64,-.20,1.62),(.28,.70,1.03),
-                      self.colors["white"]),
-                 cube("inverter_status",(1.792,-.40,1.82),(.018,.20,.16),
-                      self.colors["battery"]),
-                 pipe("dc_conduit",[(1.30,.20,3.20),(1.58,.20,2.97),
-                                    (1.58,-.20,2.40),(1.58,-.20,2.11)],
-                      self.colors["dark"],.035))
-
-        self.put("meter",
-                 cube("energy_meter",(.92,-.43,1.70),(.44,.16,.65),
-                      self.colors["white"]),
-                 cube("meter_screen",(.92,-.525,1.79),(.24,.025,.18),
-                      self.colors["glass"]),
-                 pipe("ac_wall_conduit",[(1.66,-.22,1.50),(1.60,-.43,1.50),
-                                          (1.13,-.43,1.50)],
-                      material("ac_wire",(.07,.27,.65)),.032))
-
-        # Storage is placed on a pad at grade, with a physical DC cable.
-        self.put("battery",
-                 cube("storage_pad",(2.16,-.45,.09),(1.0,.90,.18),
-                      self.colors["white"]),
-                 cube("battery_enclosure",(2.16,-.45,.81),(.69,.60,1.25),
-                      self.colors["battery"]),
-                 cube("battery_indicator",(2.16,-.77,1.08),(.20,.018,.12),
-                      self.colors["glass"]),
-                 pipe("battery_conduit",[(1.72,-.25,1.22),(1.88,-.25,1.22),
-                                          (1.88,-.45,1.22),(1.88,-.45,.80)],
-                      self.colors["dark"],.030))
-
-        # Low-contrast utility connection, no unexplained luminous diagonal.
-        self.put("grid",
-                 pipe("power_pole",[(7,-2,0),(7,-2,5.0)],
-                      self.colors["dark"],.11),
-                 pipe("service_drop",[(7,-2,4.50),(5,-2,3.80),
-                                      (1.56,-.43,2.8),(1.56,-.43,1.7),(.92,-.43,1.7)],
-                      self.colors["dark"],.028))
-        self.put("lights",
-                 sphere("window_lamp",(.62,-.435,1.78),.12,self.colors["sun"]))
-
-        # Particle flow routes deliberately match actual cable endpoints.
+        electrical(self)
+        cell_stage(self)
         self.paths["sun"]=[(-5.3,4.2,9.2),(.85,1.0,3.5)]
-        self.paths["panels"]=[(1.30,.20,3.20),(1.58,.20,2.97),
-                               (1.58,-.20,2.40),(1.58,-.20,2.11)]
-        self.paths["battery"]=[(1.72,-.25,1.22),(1.88,-.25,1.22),
-                                (1.88,-.45,.80),(2.16,-.45,.81)]
-        self.paths["grid"]=[(.92,-.43,1.7),(1.56,-.43,1.7),(1.56,-.43,2.8),
-                             (5,-2,3.80),(7,-2,4.50)]
-        self.paths["inverter"]=self.paths["panels"]
-        self.paths["lights"]=[(1.15,-1.43,1.50),(.62,-1.435,1.78)]
 
         # Stable semantic camera anchors, not averages across unrelated houses.
         self.focus.update({

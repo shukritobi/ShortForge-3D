@@ -18,7 +18,9 @@ def test_full_render_requires_current_preview_approval(project):
     with pytest.raises(ValueError,match="preview"):d.mutate({"action":"approve","id":ident})
     d.write_json(p/"preview_review.json",{"revision":d.revision(p)})
     d.mutate({"action":"approve","id":ident})
-    assert "run" in d.command_for(p,"full")
+    with pytest.raises(ValueError,match="Check narration first"):
+        d.command_for(p,"full")
+    assert "run" in d.command_for(p,"full",tts="none")
     story=json.loads((p/"storyboard.json").read_text())
     story["beats"][0]["narration"]="A revised introduction."
     d.mutate({"action":"save","id":ident,"story":story})

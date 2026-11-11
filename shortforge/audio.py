@@ -124,6 +124,7 @@ def create_audio(story: dict, output: str | Path, *, provider="qwen",
     # report even when an individual beat fails to fit. CPU synthesis latency
     # and spoken audio duration are deliberately reported separately.
     rows = []
+    native=story.get("narration_timing")=="native"
     for index, beat in enumerate(story["beats"]):
         raw = beats_dir / f"beat_{index:02d}_raw.wav"
         allotted = beat["end"] - beat["start"]
@@ -132,20 +133,22 @@ def create_audio(story: dict, output: str | Path, *, provider="qwen",
         # Avoid unnatural slow speech in long scenes: speak at native speed,
         # then let the scene breathe with silence at its tail.
         tempo = max(1.0, natural_tempo) if natural_tempo is not None else None
-        limit=1.35 if story.get("version")==2 else 1.7
+        limit=1.0 if native else (1.35 if story.get("version")==2 else 1.7)
         ok = tempo is not None and tempo <= limit
         rows.append({
             "beat": beat["id"], "start_sec": beat["start"],
             "end_sec": beat["end"], "word_count": len(beat["narration"].split()),
             "spoken_audio_sec": round(duration,3) if duration is not None else None,
             "target_sec": allotted,
-            "speed_adjustment": round(tempo,3) if tempo is not None else None,
+            "speed_adjustment": 1.0 if native and tempo is not None else (round(tempo,3) if tempo is not None else None),
+            "required_speed_to_fit": round(tempo,3) if tempo is not None else None,
+            "unused_seconds": round(max(0,allotted-duration),3) if duration is not None else None,
             "status": "fits" if ok else ("missing_audio" if tempo is None else "needs_rewrite_or_regeneration"),
             "raw_file": raw.name,
         })
     problems = [x for x in rows if x["status"] != "fits"]
     timing_report = {
-        "schema_version": 1, "provider": provider, "voice": voice,
+        "schema_version": 1, "provider": provider, "voice": voice, "timing_policy":"native" if native else "legacy",
         "status": "needs_review" if problems else "passed",
         "beats": rows, "failed_count": len(problems),
         "total_generated_speech_sec": round(sum(x["spoken_audio_sec"] or 0 for x in rows),3),
@@ -155,9 +158,11 @@ def create_audio(story: dict, output: str | Path, *, provider="qwen",
     (out / "timing_report.json").write_text(json.dumps(timing_report,indent=2)+"\n",encoding="utf-8")
     if problems:
         first = problems[0]
+        hint = "Shorten the line or run scripts/measure_narration.py to fit the shots to the voice. " if native else ""
         raise RuntimeError(
             f"Beat {first['beat']} spoken audio {first['spoken_audio_sec']}s "
-            f"cannot fit {first['target_sec']}s (tempo {first['speed_adjustment']}). "
+            f"cannot fit {first['target_sec']}s (would require {first['required_speed_to_fit']}×). "
+            f"{hint}"
             f"See {out / 'timing_report.json'} and raw voice samples before rendering."
         )
 
@@ -167,10 +172,13 @@ def create_audio(story: dict, output: str | Path, *, provider="qwen",
         target = beats_dir / f"beat_{index:02d}.wav"
         allotted = beat["end"] - beat["start"]
         tempo = rows[index]["speed_adjustment"]
+        filters=f"apad,atrim=duration={allotted:.6f},asetpts=PTS-STARTPTS"
+        if not native:
+            filters=f"atempo={tempo:.6f},"+filters
         subprocess.run([
             ffmpeg_exe, "-hide_banner", "-loglevel", "error", "-y",
             "-i", str(raw),
-            "-af", f"atempo={tempo:.6f},apad,atrim=duration={allotted:.6f},asetpts=PTS-STARTPTS",
+            "-af", filters,
             "-ar", "24000", "-ac", "1", "-c:a", "pcm_s16le", str(target)
         ], check=True)
         adjusted.append(target)
@@ -196,6 +204,7 @@ def create_audio(story: dict, output: str | Path, *, provider="qwen",
                 else "hexgrad/Kokoro-82M"),
             "duration": round(actual,3),
             "beats": len(adjusted),
+            "timing_policy": "native" if native else "legacy",
             "engine": "local_tts"
         }, indent=2) + "\n", encoding="utf-8"
     )

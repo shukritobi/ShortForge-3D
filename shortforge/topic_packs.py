@@ -63,6 +63,7 @@ SOLAR = [
 ("Together these parts turn daylight into useful household electricity.", "house","highlight","reveal"),
 ]
 from .rainwater_pack import RAINWATER, DETAILS
+from .solar_explainer import SOLAR_MECHANISMS, SOLAR_EXTRA
 PACKS = {
     "rainwater": {"title":"How a Home Harvests Rainwater",
                   "aliases":("rainwater","rain harvesting"),"beats":RAINWATER,"details":DETAILS},
@@ -94,6 +95,8 @@ def build_story(topic: str, duration: int = 90, *, fps=24, profile="draft",
         raise ValueError("Built-in scripts cover 40-240 seconds; author a manual storyboard for longer timelines")
     ident = resolve_topic(topic)
     pack = PACKS[ident]
+    if ident == "solar_home":
+        return detailed_solar_story(duration, fps, profile, audience, complexity)
     steps = pack["beats"]
     if duration>120:
         from .topic_details import SOLAR_DETAILS,WATER_DETAILS
@@ -131,3 +134,62 @@ def build_story(topic: str, duration: int = 90, *, fps=24, profile="draft",
         "audience":audience,"complexity":complexity,
         "scene_template":ident, "beats":beats
     })
+
+
+def detailed_solar_story(duration, fps, profile, audience, complexity):
+    # Short versions use concise lines but retain the three-part PV explanation.
+    compact = (
+        "Those silver lines on a solar cell collect current.",
+        "Rails leave space for air beneath the modules.",
+        "Under the metal grid sits a thin silicon cell.",
+        "Absorbed light frees electrons and leaves holes.",
+        "The junction field drives the charges toward opposite sides.",
+        "Connect cells in series and their voltages add.",
+        "A shadow can limit current in an entire series group.",
+        "A bypass diode routes current around that group.",
+        "The inverter tracks peak power and converts direct current.",
+        "Breakers protect the circuits that supply the house.",
+        "The meter tracks power entering and leaving the property.",
+        "Blackout backup needs safe grid isolation.",
+    )
+    steps = list(SOLAR_MECHANISMS)
+    if duration < 50:
+        quick = ("Silver fingers collect the current.","Rails leave an air gap.",
+                 "Silicon sits beneath the front grid.","Photons free electrons and leave holes.",
+                 "The junction separates the charges.","Series cells add their voltages.",
+                 "Shade can limit a whole group.","A diode bypasses that group.",
+                 "The inverter tracks power and converts it.","Breakers protect separate household circuits.",
+                 "The meter tracks imports and exports.","Blackout backup needs safe grid isolation.")
+        steps = [(line,*step[1:]) for line,step in zip(quick,steps)]
+    elif duration < 65:
+        steps = [(line, *step[1:]) for line, step in zip(compact, steps)]
+    elif duration < 100:
+        shorter = [step[0].split(". ",1)[0].rstrip(".")+"." for step in steps]
+        used = sum(len(line.split()) for line in shorter)
+        budget = int(2.08*(duration-2.6))
+        for i in (3,4,7,6,8,9,10,11,2,5,1,0):
+            count = len(steps[i][0].split())
+            extra = count-len(shorter[i].split())
+            if used+extra<=budget and count<=duration/len(steps)*3.3:
+                shorter[i]=steps[i][0]
+                used+=extra
+        steps = [(line,*step[1:]) for line,step in zip(shorter,steps)]
+    elif duration > 130:
+        added = min(12, round((duration-120)/9))
+        indices = {round(i*11/max(1,added-1)) for i in range(added)}
+        steps = [item for i, step in enumerate(steps)
+                 for item in ([step,(SOLAR_EXTRA[i],"pv_cell" if step[1]=="pv_light" else step[1],
+                                      "highlight",*step[3:])] if i in indices else [step])]
+    beats = []
+    for index, (line, target, action, camera, label) in enumerate(steps):
+        start, end = (round(duration*i/len(steps), 5) for i in (index,index+1))
+        actions = [{"type":action,"target":target}]
+        if target == "distribution":
+            actions.append({"type":"appear","target":"lights"})
+        beats.append({"id":f"beat_{index+1:02d}","start":start,"end":end,
+                      "problem":label,"solution":line,"narration":line,"camera":camera,
+                      "actions":actions,"callout":label})
+    return validate_story_v2({"version":2,"title":"Inside a Solar-Powered Home",
+        "duration":duration,"fps":fps,"resolution":{"preview":[360,640],"draft":[720,1280],"final":[1080,1920]}[profile],
+        "audience":audience,"complexity":complexity,"scene_template":"solar_home",
+        "narration_timing":"native","beats":beats})

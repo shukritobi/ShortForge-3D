@@ -70,7 +70,7 @@ def visual_keys(story):
     # Match the model dependencies fingerprinted by Blender. Audio and
     # subtitle-only changes do not invalidate the studio's visual receipt.
     paths=("scripts/blender_v2.py","scripts/blender_assets_v2.py","shortforge/scene_math.py",
-           "shortforge/camera_math.py","scripts/blender_actions.py")
+           "shortforge/camera_math.py","scripts/blender_actions.py","scripts/solar_neighbourhood.py")
     source=hashlib.sha256()
     for path in paths:
         source.update((ROOT/path).read_bytes())
@@ -88,10 +88,19 @@ def command_for(p,stage,tts="qwen"):
         raise ValueError("Unknown stage")
     if tts not in ("qwen","none"):
         raise ValueError("Choose Qwen narration or a silent technical export")
+    if stage=="audio" and tts=="qwen" and story.get("narration_timing")=="native":
+        return [sys.executable,"-u",str(ROOT/"scripts"/"measure_narration.py"),str(p/"storyboard.json"),
+                "--out",str(p),"--extend-to-fit"]
     if stage=="full":
         approval=p/"approval.json"
         if not approval.is_file() or json.loads(approval.read_text()).get("revision")!=revision(p):
             raise ValueError("Approve the current preview before full rendering")
+        if tts=="qwen" and story.get("narration_timing")=="native":
+            voice=p/"audio"/"voice_manifest.json"
+            measured=p/"audio"/"tts_input.json"
+            if (not voice.is_file() or not measured.is_file() or
+                read_json(voice).get("timing_policy")!="native" or read_json(measured)!=story):
+                raise ValueError("Check narration first to fit shots to the natural voice, then preview and approve the timed storyboard")
     if stage=="compose":
         receipt=p/"rendered_visuals.json"
         if not receipt.is_file() or read_json(receipt)!=visual_keys(story):

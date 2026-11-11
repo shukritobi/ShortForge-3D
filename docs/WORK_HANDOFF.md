@@ -7,6 +7,16 @@ Starting remote was 8acb352. No merging or YouTube publication is authorized.
 Actual machine: Blender 4.5.2 LTS, FFmpeg 7.1.1, RTX 4070 SUPER 12 GB,
 Qwen inference on cuda:0. Main venv Python 3.14; isolated TTS runtime retained.
 
+Current revision: `scripts/solar_neighbourhood.py` has the detailed house,
+separate porch light and service wall, street actors and enlarged PV stage.
+See `docs/SOLAR_PRODUCTION.md`. New example `examples/solar_neighbourhood_120s_v2.json`
+is the measured 249-word, 12-shot script. All 12 raw Qwen takes match the fitted
+PCM prefixes byte-for-byte. The detailed draft renders in `output/solar_detail_narration`;
+the prior solar builds remain separate. Progress is in `output/solar_detail_full.log`.
+If interrupted, resume using the same measured storyboard and output directory.
+Drive root has three current launchers and `START HERE.txt`; the ten superseded
+files are under `Archive/Previous top-level files/20261111-101215`.
+
 Implemented: solar rail normal contact and meter placement corrections,
 camera bounds fitting, contrast and shadows, colour rather than scale highlights,
 FPS-aware animation/export, arbitrary duration contracts, longer distinct scripts,

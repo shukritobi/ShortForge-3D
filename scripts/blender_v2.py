@@ -86,8 +86,6 @@ def set_camera_motion(scene, cam, kit, beat, previous_at):
     # unrelated buildings or world-origin curve objects.
     anchor=(Vector(kit.focus[target]) if target in kit.focus else
             weighted_point(kit.groups.get(target, [])))
-    if "house" in kit.focus and target in ("battery","inverter","grid"):
-        anchor=anchor.lerp(Vector(kit.focus["house"]),.20)
     modes={
         "establish":Vector((7,-15,8.5)),
         "detail":Vector((3.4,-7.5,4.1)),
@@ -99,6 +97,8 @@ def set_camera_motion(scene, cam, kit, beat, previous_at):
     mode=beat["camera"]
     offset=modes[mode]
     objects=kit.subjects.get(target,kit.groups.get(target,[]))
+    if mode=="establish":
+        objects=getattr(kit,"establish_subjects",{}).get(target,objects)
     if target in ("sun","lights","ground") and "house" in kit.subjects:
         objects=kit.subjects["house"]
     corners=[obj.matrix_world @ Vector(p) for obj in objects
@@ -125,12 +125,22 @@ def set_camera_motion(scene, cam, kit, beat, previous_at):
     # Preserve the prior look-at on each shot's opening frame so the
     # rotation interpolates smoothly instead of snapping to a new target.
     previous_focus=getattr(kit,"last_camera_focus",None)
+    cut_targets=getattr(kit,"cut_targets",set())
+    cut = target in cut_targets or getattr(kit,"last_camera_target",None) in cut_targets
     if previous_focus is None:
         previous_focus=anchor
-    camera_pose(cam,cam.location.copy(),previous_focus,start)
+    camera_pose(cam,anchor+offset if cut else cam.location.copy(),anchor if cut else previous_focus,start)
     camera_pose(cam,anchor+offset,anchor,arrive)
     camera_pose(cam,anchor+offset+Vector((.25,0,.08)),anchor,end)
     kit.last_camera_focus=anchor.copy()
+    kit.last_camera_target=target
+    if cut:
+        # Avoid interpolating across the empty space between the main set and
+        # a magnified mechanism stage. The last key of the preceding shot holds.
+        for curve in cam.animation_data.action.fcurves:
+            for key in curve.keyframe_points:
+                if round(key.co.x)==start-1:
+                    key.interpolation="CONSTANT"
 
 
 def animate_appear(objects, at, fps, *, pulse=False):
@@ -182,14 +192,13 @@ def path_position(points, u):
     return vec[-1]
 
 
-def flow_dots(kit, target, begin, end):
-    route=kit.paths.get(target)
+def flow_dots(kit, target, begin, end, route=None, color=None):
+    route=route or kit.paths.get(target)
     if not route:
         return
     water=getattr(kit,"medium",None)=="water"
-    mat=material("flow_blue" if water
-                 else "flow_yellow",(.15,.79,.98) if water
-                 else (.99,.79,.16),emission=1.4)
+    color=color or getattr(kit,"flow_colors",{}).get(target) or ((.15,.79,.98) if water else (.99,.79,.16))
+    mat=material("flow_"+"_".join(str(c) for c in color),color,emission=1.4)
     for i in range(5):
         dot=sphere(f"{target}_flow_{begin}_{i}",route[0],.065 if water else .045,mat)
         start=begin+i*4
@@ -272,6 +281,13 @@ def animate(story,kit,cam,scene):
             transform_action(objects,action,start,end,story["fps"])
             if typ=="flow":
                 flow_dots(kit,target,start,end)
+                for route,color in getattr(kit,"extra_flows",{}).get(target,[]):
+                    flow_dots(kit,target,start,end,route=route,color=color)
+            if target in getattr(kit,"shot_only",set()):
+                for obj in objects:
+                    for at,hidden in ((start,False),(end+1,True)):
+                        obj.hide_render=hidden
+                        obj.keyframe_insert(data_path="hide_render",frame=at)
             if typ=="cutaway":
                 # Open the previously capped excavation for a readable
                 # underground cross-section. Only authorized cover objects
@@ -293,7 +309,7 @@ def fingerprint(story):
     h.update(json.dumps(story,sort_keys=True).encode("utf-8"))
     for path in (Path(__file__),ROOT/"scripts"/"blender_assets_v2.py",
                  ROOT/"shortforge"/"scene_math.py",ROOT/"shortforge"/"camera_math.py",
-                 ROOT/"scripts"/"blender_actions.py"):
+                 ROOT/"scripts"/"blender_actions.py",ROOT/"scripts"/"solar_neighbourhood.py"):
         h.update(path.read_bytes())
     h.update(bpy.app.version_string.encode("utf-8"))
     return h.hexdigest()
@@ -320,6 +336,7 @@ def emit_scene_manifest(scene,story,kit,output):
 def render(story,out,preview_frames=None,start=None,end=None):
     scene,cam=configure_scene(story)
     kit=Kit().build(story["scene_template"])
+    scene.frame_set(1)
     bpy.context.view_layer.update()
     animate(story,kit,cam,scene)
     manifest=emit_scene_manifest(scene,story,kit,out)

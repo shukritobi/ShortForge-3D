@@ -8,8 +8,10 @@ and no publishing endpoint. Stop the console with Ctrl+C when finished.
    24/30 FPS, and preview (360×640), draft (720×1280) or final (1080×1920).
 2. Edit the storyboard JSON if necessary. Only registered scenes, targets,
    action types and numeric parameters are executable. Save validates it.
-3. Generate the six-frame preview. Inspect construction, contacts and framing.
-4. Approve that revision, then check Qwen narration. Listen to the WAV samples.
+3. For a new Solar project, select **Check narration** first. Studio fits the
+   timeline to natural-speed Qwen takes. See [the solar workflow](SOLAR_PRODUCTION.md).
+4. Generate the six-frame preview. Inspect construction, contacts and framing,
+   listen to the WAV samples, and approve the timed revision.
 5. Render the video. Select **Silent technical export** for a quick test without
    voice synthesis. A changed storyboard or source revision invalidates approval.
 6. Recompose captions without Blender. Review the MP4 before any external use.
@@ -31,8 +33,8 @@ project storyboards are preserved; manual edits are not overwritten.
 - `scripts/measure_narration.py STORY --out PROJECT` retains original timing,
   measures Qwen speech, and redistributes beat windows within the same duration
   when needed. It refuses material that cannot fit at at most 1.25× speed.
-- Regular v2 audio QA rejects more than 1.35× compression. Phase 1 retains its
-  prior 1.7× compatibility threshold. Speech is never slowed to fill a long beat.
+- New Solar projects retain the take at 1.0×. Legacy v2 audio QA rejects more
+  than 1.35× compression. Phase 1 retains its 1.7× compatibility threshold.
 - Captions use the fitted waveform's voiced windows and textual weighting.
   This improves silence boundaries but **is not forced word alignment**.
   Human listening and subtitle review remain required.

@@ -48,7 +48,7 @@ def test_solar_panels_are_attached_not_level_or_inverse_sloped():
 
 
 def test_connected_solar_wiring_and_focused_camera():
-    assets=source(Path("scripts/blender_assets_v2.py"))
+    assets=source(Path("scripts/blender_assets_v2.py"))+source(Path("scripts/solar_neighbourhood.py"))
     animation=source(Path("scripts/blender_v2.py"))
     ast.parse(animation)
     for token in ("dc_conduit","ac_wall_conduit","battery_conduit",

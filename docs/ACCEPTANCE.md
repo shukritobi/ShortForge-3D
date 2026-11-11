@@ -1,5 +1,16 @@
 # Acceptance evidence — 11 November 2026
 
+The detailed solar revision uses `output/solar_detail_narration` and the
+measured storyboard in `examples/solar_neighbourhood_120s_v2.json`. Its model
+passed 18 Blender checks, including both facade openings and separate light
+and equipment clearances. The 120-second, 249-word script uses 12 native Qwen
+takes. Each fitted spoken PCM prefix matched its raw take byte-for-byte.
+Studio's narration job also reused all cached takes and saved the timed shots.
+See [the detailed solar workflow](SOLAR_PRODUCTION.md).
+
+The following table records the earlier Phase 2 hardening release. Its media
+and acceptance evidence remain available in their original output folders.
+
 Overall: **PARTIAL**. Technical and sampled visual checks passed. Human
 listening and final subtitle sign-off remain open.
 All paths below are relative to `C:\Users\User\ShortForge-3D`.

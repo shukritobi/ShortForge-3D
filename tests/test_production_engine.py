@@ -20,7 +20,8 @@ def test_arbitrary_timeline_and_extended_content(duration):
     assert s["beats"][-1]["end"]==duration
     assert s["resolution"]==[1080,1920]
     if duration>120:
-        assert len(s["beats"])>24
+        assert sum(len(b["narration"].split()) for b in s["beats"]) > sum(
+            len(b["narration"].split()) for b in build_story("solar",120)["beats"])
         assert len(set(b["narration"] for b in s["beats"]))==len(s["beats"])
 
 

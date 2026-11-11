@@ -14,7 +14,8 @@ SCENE_TEMPLATES = {
     "water_distribution": frozenset({"neighbourhood", "pump", "tower", "tank", "main",
                                       "branch", "faucet", "reservoir", "ground"}),
     "solar_home": frozenset({"house", "sun", "panels", "inverter", "battery",
-                            "meter", "grid", "lights", "ground"}),
+                            "meter", "grid", "lights", "ground", "distribution",
+                            "pv_cell", "pv_light", "pv_carriers", "pv_shade", "pv_bypass"}),
 }
 CAMERAS = frozenset({"establish", "detail", "section", "follow", "overhead", "reveal"})
 ACTION_TYPES = frozenset({"appear", "assemble", "highlight", "flow", "pulse", "cutaway",
@@ -42,6 +43,8 @@ def validate_story_v2(story: dict) -> dict:
         raise StoryV2Error("fps must be 24 or 30")
     if story.get("resolution") not in ([360,640],[720,1280],[1080,1920]):
         raise StoryV2Error("unsupported portrait resolution")
+    if story.get("narration_timing", "legacy") not in ("legacy", "native"):
+        raise StoryV2Error("narration_timing must be legacy or native")
     scene = story.get("scene_template")
     if not isinstance(scene, str) or scene not in SCENE_TEMPLATES:
         raise StoryV2Error(f"scene_template must be registered: {sorted(SCENE_TEMPLATES)}")

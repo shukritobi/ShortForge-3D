@@ -344,6 +344,30 @@
       ]
     },
     {
+      "id": "model.suburban_house",
+      "version": "0.3.0",
+      "kind": "model",
+      "source": "scripts/solar_neighbourhood.py",
+      "license": "original",
+      "status": "prototype",
+      "units": "metres",
+      "category": "architecture",
+      "dependencies": ["shortforge/scene_math.py"],
+      "tags": ["facade_openings", "gable_roof", "service_wall"]
+    },
+    {
+      "id": "model.pv_cell_cutaway",
+      "version": "0.3.0",
+      "kind": "model",
+      "source": "scripts/solar_neighbourhood.py",
+      "license": "original",
+      "status": "prototype",
+      "units": "schematic_scale",
+      "category": "mechanism",
+      "dependencies": ["scripts/blender_assets_v2.py"],
+      "tags": ["junction", "charge_carriers", "bypass_diode"]
+    },
+    {
       "id": "sfx.procedural_library",
       "version": "0.2.0",
       "kind": "sfx",

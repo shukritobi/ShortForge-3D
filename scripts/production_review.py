@@ -19,6 +19,9 @@ def main():
     if tests["exit_code"]==0:
         for topic,duration in (("solar_home",120),("water_distribution",90),("rainwater",90)):
             project=OUTPUT/"projects"/topic/f"{duration}s"
+            if topic=="solar_home":
+                # Keep manually edited earlier solar projects intact.
+                project=OUTPUT/"projects"/topic/"detailed"/f"{duration}s"
             project.mkdir(parents=True,exist_ok=True)
             story=project/"storyboard.json"
             if not story.exists():story.write_text(json.dumps(build_story(topic,duration),indent=2))

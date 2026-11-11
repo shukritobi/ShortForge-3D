@@ -213,3 +213,7 @@ Start `scripts/ShortForge-Studio.bat` for the local review dashboard, or
 `scripts/ShortForge-Verify.bat` for tests and real previews of all three topics.
 See [production workflow](docs/PRODUCTION.md), [acceptance evidence](docs/ACCEPTANCE.md)
 and [work handoff](docs/WORK_HANDOFF.md). Publishing remains disabled.
+
+The detailed solar pack has a suburban set, a magnified photovoltaic cell and
+native-speed narration. Follow [the solar workflow](docs/SOLAR_PRODUCTION.md)
+to measure the voice, preview the timed shots, and render the approved project.

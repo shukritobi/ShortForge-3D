@@ -3,26 +3,45 @@ import argparse
 import json
 from pathlib import Path
 import sys
+import time
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from shortforge.audio import create_audio
 from shortforge.contract import load_storyboard
 from shortforge.timing import retime_from_report
+from shortforge.studio_lock import studio_job_slot
 
 
-if __name__=="__main__":
+def main():
     p=argparse.ArgumentParser()
     p.add_argument("story",type=Path)
     p.add_argument("--out",type=Path,required=True)
+    p.add_argument("--extend-to-fit",action="store_true",help="extend a native-speed timeline if speech exceeds its budget")
     a=p.parse_args()
     story=load_storyboard(a.story)
+    report=a.out/"audio"/"timing_report.json"
     try:create_audio(story,a.out/"audio")
     except RuntimeError:
-        report=a.out/"audio"/"timing_report.json"
         if not report.is_file():raise
-        story=retime_from_report(story,json.loads(report.read_text()))
+        failed=True
+    else:failed=False
+    if failed or story.get("narration_timing")=="native":
+        measured=json.loads(report.read_text())
         (a.out/"storyboard_before_timing.json").write_bytes(a.story.read_bytes())
-        (a.out/"storyboard.json").write_text(json.dumps(story,indent=2))
+        story=retime_from_report(story,measured,extend=a.extend_to_fit)
         create_audio(story,a.out/"audio")
-    else:
-        (a.out/"storyboard.json").write_text(json.dumps(story,indent=2))
+    target=a.out/"storyboard.json"
+    temp=target.with_suffix(".timed.tmp")
+    temp.write_text(json.dumps(story,indent=2),encoding="utf-8")
+    for attempt in range(5):
+        try:
+            temp.replace(target)
+            break
+        except PermissionError:
+            if attempt==4:raise
+            time.sleep(.025*(attempt+1))
     print("Measured narration passed; render using",a.out/"storyboard.json")
+
+
+if __name__=="__main__":
+    with studio_job_slot():
+        main()
