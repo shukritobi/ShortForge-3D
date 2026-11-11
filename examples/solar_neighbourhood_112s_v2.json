@@ -58,7 +58,7 @@
       "callout": "Roof rails and air gap",
       "shot_cues": [
         {
-          "at": 0.16,
+          "at": 0,
           "target": "roof_rails",
           "camera": "detail"
         }

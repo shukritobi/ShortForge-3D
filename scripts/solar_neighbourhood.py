@@ -4,6 +4,7 @@ import math
 import random
 
 import bpy
+import bmesh
 from mathutils import Vector
 
 from blender_assets_v2 import cube, cylinder, material, pipe, sphere
@@ -181,12 +182,45 @@ def detailed_house(kit, name, x, y, siding):
 
 
 def _plant(kit, name, x, y, height):
-    trunk=cylinder(name+"_trunk",(x,y,height*.34),height*.033,height*.68,kit.colors["bark"])
-    leaves=[]
-    for i,(dx,dy,z,r) in enumerate(((0,0,.8,.34),(.15,.02,.66,.27),(-.16,.05,.72,.26),(.03,-.16,.78,.25))):
-        leaves.append(sphere(f"{name}_{i}",(x+height*dx,y+height*dy,height*z),height*r,
-                             kit.colors["leaf"] if i%2 else kit.colors["leaf_dark"]))
-    return [trunk,*leaves]
+    rng=random.Random(name)
+    trunk=cylinder(name+"_trunk",(x,y,height*.34),height*.03,height*.68,kit.colors["bark"])
+    branches=[]
+    vertices,faces,shades=[],[],[]
+    template=bmesh.new()
+    bmesh.ops.create_icosphere(template,subdivisions=2,radius=1)
+    template.verts.index_update()
+    points=[v.co.copy() for v in template.verts]
+    triangles=[tuple(v.index for v in f.verts) for f in template.faces]
+    template.free()
+    for limb in range(8):
+        theta=limb*2.39996+rng.uniform(-.3,.3)
+        reach=height*rng.uniform(.10,.27)
+        z=height*(.63+limb*.04)
+        cx=x+reach*math.cos(theta)
+        cy=y+reach*math.sin(theta)
+        branches.append(pipe(f"{name}_limb_{limb}",[(x,y,height*.39),(x*.4+cx*.6,y*.4+cy*.6,z*.84),(cx,cy,z)],
+                             kit.colors["bark"],height*(.010-limb*.00055)))
+        for _ in range(9):
+            angle=rng.uniform(0,math.tau)
+            radius=height*rng.uniform(.025,.113)
+            off=height*rng.uniform(.025,.14)
+            px=cx+off*math.cos(angle)
+            py=cy+off*math.sin(angle)
+            pz=z+height*rng.uniform(-.058,.09)
+            start=len(vertices)
+            vertices.extend((px+radius*v.x*1.19,py+radius*v.y,pz+radius*v.z*.77) for v in points)
+            faces.extend(tuple(start+j for j in face) for face in triangles)
+            shades.extend([rng.choices(range(4),weights=(3,4,2,1))[0]]*len(triangles))
+    mesh=bpy.data.meshes.new(name+"_foliage")
+    mesh.from_pydata(vertices,[],faces)
+    for finish in (kit.colors["leaf_dark"],kit.colors["leaf"],
+                   material("solar_leaf_sage",(.16,.32,.057)),material("solar_leaf_tips",(.27,.45,.082))):
+        mesh.materials.append(finish)
+    for poly,index in zip(mesh.polygons,shades):
+        poly.material_index=index
+    foliage=bpy.data.objects.new(name+"_foliage",mesh)
+    bpy.context.collection.objects.link(foliage)
+    return [trunk,*branches,foliage]
 
 
 def _ride(kit, name, parts, start, finish, first, last):
@@ -516,6 +550,7 @@ def cell_stage(kit):
     kit.paths.update(pv_light=[(x-.60,-.73,2.01),(x-.29,-.65,1.20),(x-.14,-.665,.96)],
                      pv_carriers=[(x-.14,-.665,.96),(x+.59,-.666,1.12)],pv_bypass=bypass)
     kit.extra_flows={"pv_carriers": [([(x-.14,-.671,.96),(x-.64,-.674,.74)],(.97,.18,.21))]}
+    kit.energy_flows={"pv_light":.026,"pv_carriers":.031,"pv_bypass":.040,"grid":.044}
     kit.flow_colors={"pv_carriers":(.13,.78,1.0),"pv_bypass":(.96,.59,.09)}
     kit.cut_targets={"pv_cell","pv_light","pv_carriers","pv_bypass"}
     kit.shot_only={"pv_light","pv_carriers","pv_shade","pv_bypass"}

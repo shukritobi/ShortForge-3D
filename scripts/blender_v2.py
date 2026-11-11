@@ -23,7 +23,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parent))
 from shortforge.contract import load_storyboard
 from shortforge.story_v2 import total_frames
 from shortforge.camera_math import fit_distance
-from shortforge.render_cache import shot_keys, valid_png
+from shortforge.render_cache import renderer_sources, shot_keys, valid_png
 from blender_assets_v2 import Kit, material, sphere
 from blender_actions import transform_action
 
@@ -144,7 +144,7 @@ def set_camera_motion(scene, cam, kit, beat, previous_at, *, hard_cut=False):
                     key.interpolation="CONSTANT"
 
 
-def animate_appear(objects, at, fps, *, pulse=False):
+def animate_appear(objects, at, fps, *, pulse=False, assemble=True):
     for obj in objects:
         # Avoid replaying construction when this same target is highlighted
         # again in later beats; only the first reveal performs assembly.
@@ -167,7 +167,7 @@ def animate_appear(objects, at, fps, *, pulse=False):
         final=Vector(obj.scale)
         original=Vector(obj.location)
         visibility(obj,at)
-        if at>1:
+        if at>1 and assemble:
             obj.scale=final*.08
             obj.location=original+Vector((0,0,-.45))
             obj.keyframe_insert(data_path="scale",frame=at)
@@ -199,6 +199,9 @@ def flow_dots(kit, target, begin, end, route=None, color=None):
         return
     water=getattr(kit,"medium",None)=="water"
     color=color or getattr(kit,"flow_colors",{}).get(target) or ((.15,.79,.98) if water else (.99,.79,.16))
+    if target in getattr(kit,"energy_flows",{}):
+        energy_pulses(target,route,color,begin,end,kit.energy_flows[target])
+        return
     mat=material("flow_"+"_".join(str(c) for c in color),color,emission=1.4)
     for i in range(5):
         dot=sphere(f"{target}_flow_{begin}_{i}",route[0],.065 if water else .045,mat)
@@ -209,6 +212,37 @@ def flow_dots(kit, target, begin, end, route=None, color=None):
             f=start+int((stop-start)*j/17)
             dot.location=path_position(route,j/17)
             dot.keyframe_insert(data_path="location",frame=f)
+
+
+def energy_pulses(target, route, color, begin, end, radius):
+    """Soft packets travel on the route with a small flicker and side-to-side drift."""
+    fps=bpy.context.scene.render.fps
+    span=max(1,end-begin)
+    length=sum((Vector(b)-Vector(a)).length for a,b in zip(route,route[1:]))
+    travel=min(span,max(round(1.1*fps),round(length/2.2*fps)))
+    separation=max(round(.32*fps),travel//4)
+    for start in range(begin,end-travel+1,separation):
+        for trail in range(3):
+            size=radius*(1-.22*trail)
+            glow=material(f"charge_{color}_{trail}",color,emission=(4.2,2.9,2.0)[trail])
+            bead=sphere(f"{target}_pulse_{start}_{trail}",route[0],size,glow)
+            first=start+trail*2
+            last=min(end,first+travel)
+            visibility(bead,first,last)
+            samples=sorted({first,last,*range(first,last,3)})
+            for f in samples:
+                u=(f-first)/travel
+                point=path_position(route,u)
+                tangent=path_position(route,min(1,u+.01))-path_position(route,max(0,u-.01))
+                side=tangent.cross(Vector((0,0,1)))
+                if side.length<.0001:
+                    side=Vector((1,0,0))
+                fade=min(1,(f-first+1)/4,(last-f+1)/4)
+                phase=(f-first)*2*math.pi*2.5/fps
+                bead.location=point+side.normalized()*(size*.18*math.sin(phase))
+                bead.scale=(fade*(1+.11*math.sin(phase)),)*3
+                bead.keyframe_insert(data_path="location",frame=f)
+                bead.keyframe_insert(data_path="scale",frame=f)
 
 
 def configure_scene(story):
@@ -248,6 +282,16 @@ def configure_scene(story):
     if story["scene_template"]=="solar_home":
         from solar_neighbourhood import solar_lighting
         solar_lighting(scene,sun,lamp)
+        scene.use_nodes=True
+        nodes=scene.node_tree.nodes
+        glare=nodes.new("CompositorNodeGlare")
+        glare.glare_type="FOG_GLOW"
+        glare.inputs["Threshold"].default_value=1.9
+        glare.inputs["Strength"].default_value=.28
+        glare.inputs["Size"].default_value=.18
+        links=scene.node_tree.links
+        links.new(nodes.get("Render Layers").outputs["Image"],glare.inputs["Image"])
+        links.new(glare.outputs["Image"],nodes.get("Composite").inputs["Image"])
     bpy.ops.object.camera_add(location=(12,-25,15))
     cam=bpy.context.object
     cam.name="sf2_portrait_camera"
@@ -289,16 +333,20 @@ def animate(story,kit,cam,scene):
                 set_camera_motion(scene,cam,kit,segment,start,hard_cut=True)
         for action in beat["actions"]:
             typ,target=action["type"],action["target"]
+            settle=not getattr(kit,"instant_reveal",False) or typ=="assemble"
             for dependency in kit.dependencies.get(target,[]):
-                animate_appear(kit.groups[dependency],start,story["fps"])
+                animate_appear(kit.groups[dependency],start,story["fps"],assemble=settle)
             objects=kit.groups[target]
             animate_appear(objects,start,story["fps"],
-                           pulse=typ in ("pulse","highlight"))
+                           pulse=typ in ("pulse","highlight"),assemble=settle)
             transform_action(objects,action,start,end,story["fps"])
             if typ=="flow":
                 flow_dots(kit,target,start,end)
                 for route,color in getattr(kit,"extra_flows",{}).get(target,[]):
                     flow_dots(kit,target,start,end,route=route,color=color)
+            animate_subject=getattr(kit,"beat_animations",{}).get(target)
+            if animate_subject:
+                animate_subject(start,end,story["fps"])
             if target in getattr(kit,"shot_only",set()):
                 for obj in objects:
                     for at,hidden in ((start,False),(end+1,True)):
@@ -320,13 +368,11 @@ def animate(story,kit,cam,scene):
     scene.frame_set(1)
 
 
-def fingerprint(story):
+def fingerprint(story, *, scene_template=None):
     h=hashlib.sha256()
     h.update(json.dumps(story,sort_keys=True).encode("utf-8"))
-    for path in (Path(__file__),ROOT/"scripts"/"blender_assets_v2.py",
-                 ROOT/"shortforge"/"scene_math.py",ROOT/"shortforge"/"camera_math.py",
-                 ROOT/"scripts"/"blender_actions.py",ROOT/"scripts"/"solar_neighbourhood.py"):
-        h.update(path.read_bytes())
+    for path in renderer_sources(scene_template or story["scene_template"]):
+        h.update((ROOT/path).read_bytes())
     h.update(bpy.app.version_string.encode("utf-8"))
     return h.hexdigest()
 
@@ -373,7 +419,7 @@ def render(story,out,preview_frames=None,start=None,end=None):
     frames=out/"frames"
     frames.mkdir(parents=True,exist_ok=True)
     state=out/"render_state_v2.json"
-    keys=shot_keys(story,fingerprint({}))
+    keys=shot_keys(story,fingerprint({},scene_template=story["scene_template"]))
     previous=json.loads(state.read_text(encoding="utf-8")) if state.is_file() else {}
     records=previous.get("verified_frames",{})
     meta={"fingerprint":manifest["fingerprint"],"frames":scene.frame_end,

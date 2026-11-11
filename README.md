@@ -220,3 +220,8 @@ uses a uniform 1.07× speaking rate. Follow [the solar workflow](docs/SOLAR_PROD
 to measure the voice and preview the timed shots. See the
 [episode scripts](docs/EPISODE_SCRIPTS.md) and [episode backlog](docs/TOPIC_BACKLOG.md)
 for narration, shot plans and researched hooks.
+
+To measure, preview and render the authored season on the workstation, run
+`python scripts/produce_episode.py complete --blender PATH_TO_BLENDER`.
+Use `--episode episode_compost` for a single episode and `--review-dir PATH`
+to copy verified exports to a review folder.

@@ -212,6 +212,7 @@ class Kit:
         Visible model parts stay registered to the storyboard's semantic targets.
         """
         from solar_neighbourhood import street, electrical, cell_stage
+        self.instant_reveal=True
         street(self)
         self.dependencies={"sun":["house"],"panels":["house"],
                            "inverter":["house","panels"],"battery":["house","inverter"],
@@ -342,6 +343,9 @@ class Kit:
             self.solar()
         elif scene_template=="rainwater":
             self.rainwater()
+        elif scene_template.startswith("episode_"):
+            from episode_sets import build_episode
+            build_episode(self,scene_template)
         else:
             raise ValueError("Unregistered template "+str(scene_template))
         return self

@@ -83,6 +83,13 @@ bounce lighting. The side-by-side image includes the previous cut, daylight
 EEVEE and the Cycles still. Use `output/solar_daylight` for the current movie
 and `output/solar_daylight_comparison` for that comparison.
 
+The energy revision uses a small, soft glow and lightly pulsing markers
+along the illustrated electrical routes. Blue and rose identify the charge
+carriers. Amber follows the diode and grid path. The markers carry the motion
+while the visible hardware holds position. The roof camera cuts directly to
+the rails. Tree crowns now use several branch directions and leaf shades.
+The new export is built under `output/solar_energy`.
+
 Check the six story frames and the additional audit angles before full renders.
 The Blender audit measures 12 panel/rail contacts, meter attachment, three
 lamp clearances and the two true facade openings. Materials and the set can

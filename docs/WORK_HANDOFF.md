@@ -10,7 +10,7 @@ Qwen inference on cuda:0. Main venv Python 3.14; isolated TTS runtime retained.
 ## Current direction
 
 - Start from `examples/solar_neighbourhood_112s_v2.json` and
-  `output/solar_daylight`. The user liked the previous cut's direction and asked
+  `output/solar_energy`. The user liked the previous cut's direction and asked
   for slightly faster, consistent narration, quieter openings, clearer
   camera-to-narration timing, and a coherent, detailed neighbourhood.
 - The director cut uses one pitch-preserving 1.07× adjustment across all 12
@@ -35,10 +35,28 @@ Qwen inference on cuda:0. Main venv Python 3.14; isolated TTS runtime retained.
   `output/solar_daylight_comparison` includes a Cycles OptiX still of the
   breaker shot. The 112-second daylight movie passed full decode and
   black-frame checks. Its narration WAV matches the preceding cut.
+- The next solar revision adds a soft glow and slight flutter to packets
+  moving along the photon, carrier, diode and grid routes. The model shows
+  motion on the route while the hardware stays fixed. The route is schematic.
+  Camera review found the old roof edit had an overhead insert at 6.96 seconds
+  and another cut at 7.96 seconds. The new cut goes directly to the rails.
+  Electrical close-ups start with their hardware in place. The trees have
+  irregular clusters of foliage and visible branches.
+- Use this solar cut as the series benchmark. Keep the subject well lit, make
+  camera changes serve the spoken explanation, and give moving energy or fluid
+  a visible path. Use readable close-ups, physically separate overlapping
+  parts, and check the opening for noise. The final review exports are vertical
+  720 × 1280 at 24 fps.
 - `docs/EPISODE_SCRIPTS.md` contains all ten voiceover drafts with five
   timed picture beats and primary references per topic. The 51–56 second
   runtimes are editorial targets. Measure the final narration before
   locking shots.
+- Build, voice and render the ten registered scenes with
+  `scripts/produce_episode.py complete`. This command reuses Qwen takes,
+  sets each episode to its measured voice plus short pauses, renders five
+  stills, then checks the full MP4. Use `--episode episode_compost` to rerun
+  only one episode. The working projects are in `output/season_one`, and
+  passing exports can go to the Drive review folder `outbox/season_one`.
 - `docs/TOPIC_BACKLOG.md` holds ten researched pitches with hooks, visual beats
   and source links. Start with the compost-bin comparison, then home wind and
   the sink trap. Open with a visible contradiction, use a cutaway to explain

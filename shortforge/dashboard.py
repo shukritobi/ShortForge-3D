@@ -22,7 +22,7 @@ from .contract import validate_storyboard
 from .topic_packs import PACKS,build_story
 from .telemetry import Sampler
 from .video import inspect_video
-from .render_cache import shot_keys
+from .render_cache import renderer_sources, shot_keys
 
 ROOT=Path(__file__).resolve().parents[1]
 PROJECTS=ROOT/"output"/"dashboard_projects"
@@ -69,10 +69,8 @@ def revision(p):
 def visual_keys(story):
     # Match the model dependencies fingerprinted by Blender. Audio and
     # subtitle-only changes do not invalidate the studio's visual receipt.
-    paths=("scripts/blender_v2.py","scripts/blender_assets_v2.py","shortforge/scene_math.py",
-           "shortforge/camera_math.py","scripts/blender_actions.py","scripts/solar_neighbourhood.py")
     source=hashlib.sha256()
-    for path in paths:
+    for path in renderer_sources(story["scene_template"]):
         source.update((ROOT/path).read_bytes())
     return shot_keys(story,source.hexdigest())
 

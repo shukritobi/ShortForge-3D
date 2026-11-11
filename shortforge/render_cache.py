@@ -10,6 +10,14 @@ import zlib
 from pathlib import Path
 
 
+def renderer_sources(scene_template):
+    shared=("scripts/blender_v2.py","scripts/blender_assets_v2.py","shortforge/scene_math.py",
+            "shortforge/camera_math.py","scripts/blender_actions.py","scripts/solar_neighbourhood.py")
+    if scene_template.startswith("episode_"):
+        return (*shared,"scripts/episode_sets.py")
+    return shared
+
+
 def digest(value):
     return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(",",":")).encode()).hexdigest()
 

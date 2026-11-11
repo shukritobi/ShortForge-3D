@@ -48,7 +48,7 @@ SOLAR_EXTRA = [
 # scripts use their whole-beat cameras because their phrasing differs.
 SOLAR_SHOTS = (
     ((.40, "pv_contacts", "detail"),),
-    ((.16, "roof_rails", "detail"),),
+    ((0, "roof_rails", "detail"),),
     ((.58, "pv_junction", "section"),),
     ((.30, "pv_junction", "section"),),
     ((0, "pv_junction", "section"),),

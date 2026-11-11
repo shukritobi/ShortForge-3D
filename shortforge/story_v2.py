@@ -6,6 +6,7 @@ untrusted AI scripts cannot inject Python, assets, paths or Blender expressions.
 from __future__ import annotations
 import math
 import re
+from .episode_story import EPISODES, TARGETS
 
 DURATIONS = (60, 75, 90, 120, 180)
 SCENE_TEMPLATES = {
@@ -16,6 +17,7 @@ SCENE_TEMPLATES = {
     "solar_home": frozenset({"house", "sun", "panels", "inverter", "battery",
                             "meter", "grid", "lights", "ground", "distribution",
                             "pv_cell", "pv_light", "pv_carriers", "pv_shade", "pv_bypass"}),
+    **{episode:frozenset(TARGETS) for episode in EPISODES},
 }
 CAMERAS = frozenset({"establish", "detail", "section", "follow", "overhead", "reveal"})
 SHOT_SUBJECTS = {"solar_home": frozenset({"pv_contacts", "roof_rails", "pv_junction",
@@ -59,8 +61,9 @@ def validate_story_v2(story: dict) -> dict:
     if not isinstance(title, str) or not (3 <= len(title.strip()) <= 180):
         raise StoryV2Error("invalid title")
     beats = story.get("beats")
-    if not isinstance(beats, list) or not (8 <= len(beats) <= 720):
-        raise StoryV2Error("expected 8 to 720 beats")
+    minimum=5 if scene in EPISODES else 8
+    if not isinstance(beats, list) or not (minimum <= len(beats) <= 720):
+        raise StoryV2Error(f"expected {minimum} to 720 beats")
     seen = set()
     cursor = 0.0
     for index, beat in enumerate(beats):
