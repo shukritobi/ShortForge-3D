@@ -218,4 +218,5 @@ The detailed solar pack has a suburban set, enlarged photovoltaic models and
 camera cuts timed to the narration. The [112-second director cut](examples/solar_neighbourhood_112s_v2.json)
 uses a uniform 1.07× speaking rate. Follow [the solar workflow](docs/SOLAR_PRODUCTION.md)
 to measure the voice and preview the timed shots. See the
-[episode backlog](docs/TOPIC_BACKLOG.md) for researched hooks and shot plans.
+[episode scripts](docs/EPISODE_SCRIPTS.md) and [episode backlog](docs/TOPIC_BACKLOG.md)
+for narration, shot plans and researched hooks.

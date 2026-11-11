@@ -4,9 +4,111 @@ import math
 import random
 
 import bpy
+from mathutils import Vector
 
 from blender_assets_v2 import cube, cylinder, material, pipe, sphere
 from shortforge.scene_math import ROOF_PITCH, roof_height, roof_surface_point
+
+
+def _area(scene, name, position, target, power, size, color):
+    light=bpy.data.lights.new(name,"AREA")
+    light.energy=power
+    light.shape="DISK"
+    light.size=size
+    light.color=color
+    light.use_shadow_jitter=True
+    obj=bpy.data.objects.new(name,light)
+    scene.collection.objects.link(obj)
+    obj.location=position
+    obj.rotation_euler=(Vector(target)-obj.location).to_track_quat("-Z","Y").to_euler()
+
+
+def solar_lighting(scene, sun, key):
+    """Daylight for the street, with soft keys aimed at the equipment and cutaways."""
+    scene.eevee.use_raytracing=False
+    sun.data.energy=1.55
+    sun.data.angle=.19
+    key.data.energy=2350
+    key.data.use_shadow_jitter=True
+    _area(scene,"Service wall softbox",(5.8,-2.0,4.7),(1.6,.75,1.6),490,4.0,(.88,.94,1))
+    _area(scene,"Side yard bounce",(4.0,5.6,5.3),(2.55,2.05,1),300,5.0,(.90,.96,1))
+    _area(scene,"Porch bounce",(-1.0,-4.9,3.5),(-.73,-.45,2.1),185,3.4,(1,.93,.84))
+    _area(scene,"Cell stage softbox",(25,-3.8,3.8),(25,0,1),245,3.6,(.93,.97,1))
+    _area(scene,"Diode stage softbox",(31,-3.4,3.1),(30,0,.85),340,3.8,(1,.96,.90))
+
+    tree=scene.world.node_tree
+    nodes,links=tree.nodes,tree.links
+    sky=nodes.get("Background")
+    sky.inputs["Strength"].default_value=.80
+    coords=nodes.new("ShaderNodeTexCoord")
+    split=nodes.new("ShaderNodeSeparateXYZ")
+    links.new(coords.outputs["Normal"],split.inputs[0])
+    height=nodes.new("ShaderNodeMath")
+    height.operation="ABSOLUTE"
+    links.new(split.outputs["Z"],height.inputs[0])
+    gradient=nodes.new("ShaderNodeValToRGB")
+    gradient.color_ramp.elements[0].color=(.36,.60,.94,1)
+    gradient.color_ramp.elements[1].position=.52
+    gradient.color_ramp.elements[1].color=(.032,.23,.63,1)
+    links.new(height.outputs[0],gradient.inputs["Fac"])
+    stretch=nodes.new("ShaderNodeVectorMath")
+    stretch.operation="MULTIPLY"
+    stretch.inputs[1].default_value=(2.1,2.1,6.8)
+    links.new(coords.outputs["Normal"],stretch.inputs[0])
+    clouds=nodes.new("ShaderNodeTexNoise")
+    clouds.inputs["Scale"].default_value=3.2
+    clouds.inputs["Detail"].default_value=3.0
+    links.new(stretch.outputs["Vector"],clouds.inputs["Vector"])
+    cover=nodes.new("ShaderNodeValToRGB")
+    cover.color_ramp.elements[0].position=.55
+    cover.color_ramp.elements[1].position=.70
+    cover.color_ramp.interpolation="EASE"
+    links.new(clouds.outputs["Fac"],cover.inputs["Fac"])
+    mix=nodes.new("ShaderNodeMixRGB")
+    mix.inputs[2].default_value=(1.72,1.77,1.84,1)
+    links.new(cover.outputs["Color"],mix.inputs[0])
+    links.new(gradient.outputs["Color"],mix.inputs[1])
+    links.new(mix.outputs[0],sky.inputs["Color"])
+    ambient=nodes.new("ShaderNodeBackground")
+    ambient.inputs["Color"].default_value=(.46,.65,.85,1)
+    ambient.inputs["Strength"].default_value=.36
+    light_path=nodes.new("ShaderNodeLightPath")
+    background=nodes.new("ShaderNodeMixShader")
+    links.new(light_path.outputs["Is Camera Ray"],background.inputs[0])
+    links.new(ambient.outputs[0],background.inputs[1])
+    links.new(sky.outputs[0],background.inputs[2])
+    links.new(background.outputs[0],nodes.get("World Output").inputs["Surface"])
+
+
+def _surface_relief(finish, *, siding=False):
+    tree=finish.node_tree
+    nodes,links=tree.nodes,tree.links
+    geometry=nodes.new("ShaderNodeNewGeometry")
+    position=geometry.outputs["Position"]
+    if siding:
+        split=nodes.new("ShaderNodeSeparateXYZ")
+        links.new(position,split.inputs[0])
+        scale=nodes.new("ShaderNodeMath")
+        scale.operation="MULTIPLY"
+        scale.inputs[1].default_value=5.6
+        links.new(split.outputs["Z"],scale.inputs[0])
+        period=nodes.new("ShaderNodeMath")
+        period.operation="FRACT"
+        links.new(scale.outputs[0],period.inputs[0])
+        edge=nodes.new("ShaderNodeValToRGB")
+        edge.color_ramp.elements[1].position=.09
+        links.new(period.outputs[0],edge.inputs["Fac"])
+        height=edge.outputs["Color"]
+    else:
+        noise=nodes.new("ShaderNodeTexNoise")
+        noise.inputs["Scale"].default_value=52
+        links.new(position,noise.inputs["Vector"])
+        height=noise.outputs["Fac"]
+    bump=nodes.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value=.38
+    bump.inputs["Distance"].default_value=.012 if siding else .006
+    links.new(height,bump.inputs["Height"])
+    links.new(bump.outputs["Normal"],nodes.get("Principled BSDF").inputs["Normal"])
 
 
 def _box_span(name, x0, x1, y, z0, z1, depth, finish):
@@ -33,6 +135,7 @@ def detailed_house(kit, name, x, y, siding):
     trim=kit.colors["white"]
     dark=kit.colors["dark"]
     roof=kit.colors["roof"]
+    _surface_relief(siding,siding=True)
     front=y-1.265
     door=(-1.20,-.27,.13,2.10)
     window=(.12,1.17,.98,2.17)
@@ -174,7 +277,12 @@ def street(kit):
         "panels": material("solar_deep_pv",(.017,.055,.14),metallic=.24,roughness=.29),
     })
     _lawn_texture(kit.colors["ground"])
+    _surface_relief(kit.colors["roof"])
     kit.scene_ground()
+    kit.put("ground",cube("distant_lawn",(-2,4,-.14),(102,88,.09),kit.colors["ground"]))
+    for i,(x,y,h) in enumerate(((-18,10,3.2),(-14,14,4.6),(-9,11,3.8),
+                               (-4,14,4.2),(1,14,4.6),(7,12,3.6),(13,14,4.3),(16,10,3.1))):
+        kit.put("ground",*_plant(kit,f"background_tree_{i}",x,y,h))
     concrete=kit.colors["concrete"]
     kit.put("ground",cube("solar_sidewalk",(0,-4.98,.065),(33,1.03,.13),concrete),
             cube("solar_curb",(0,-5.49,.065),(33,.11,.13),kit.colors["white"]))
@@ -239,6 +347,20 @@ def street(kit):
     _ride(kit,"solar_cyclist",parts,(-7,-4.95,.13),(10,-4.95,.13),1,scene.render.fps*11)
 
 
+def _wall_label(name, text, position, size, finish):
+    font=bpy.data.curves.new(name,"FONT")
+    font.body=text
+    font.size=size
+    font.align_x="CENTER"
+    font.align_y="CENTER"
+    font.materials.append(finish)
+    obj=bpy.data.objects.new(name,font)
+    bpy.context.collection.objects.link(obj)
+    obj.location=position
+    obj.rotation_euler=(math.pi/2,0,math.pi/2)
+    return obj
+
+
 def electrical(kit):
     alloy,trim,dark=(kit.colors[k] for k in ("steel","white","dark"))
     screen=material("solar_display",(.024,.24,.25),roughness=.35,emission=.25)
@@ -252,23 +374,31 @@ def electrical(kit):
         kit.put("inverter",cube("inverter_vent",(1.788,-.215+i*.074,1.38),(.018,.033,.20),dark))
     for y in (-.19,.13):
         kit.put("inverter",cylinder("inverter_gland",(1.62,y,1.10),.052,.091,dark))
+    kit.put("inverter",_wall_label("inverter_readout","DC / AC",(1.82,-.03,1.835),.029,trim))
 
     kit.put("distribution",cube("panel_backbox",(1.585,.72,1.56),(.17,.51,.71),alloy),
             cube("panel_deadfront",(1.682,.72,1.56),(.045,.47,.66),dark),
             cube("panel_directory",(1.711,.72,1.785),(.015,.35,.09),trim),
             pipe("inverter_to_panel",[(1.61,.13,1.10),(1.55,.13,.94),(1.55,.72,.94),(1.58,.72,1.20)],dark,.025))
+    kit.put("distribution",_wall_label("panel_title","CIRCUITS",(1.72,.72,1.785),.036,dark))
+    circuit_names=(("LIGHTS","OUTLETS"),("KITCHEN","COOLING"),
+                   ("WATER HEAT","GARAGE"),("LAUNDRY","SPARE"))
     for row in range(4):
         for col in range(2):
             y=.60+col*.24
             z=1.66-row*.093
             kit.put("distribution",cube("breaker_body",(1.713,y,z),(.044,.17,.072),trim),
                     cube("breaker_toggle",(1.743,y,z+.012),(.036,.066,.029),dark),
-                    cube("breaker_index",(1.741,y-.062,z),(.014,.021,.042),screen))
+                    cube("breaker_index",(1.741,y-.062,z),(.014,.021,.042),screen),
+                    _wall_label(f"breaker_label_{row}_{col}",circuit_names[row][col],
+                                (1.736,y+.016,z-.019),.013,dark))
 
     kit.put("meter",cube("energy_meter",(1.58,1.56,1.57),(.16,.32,.49),alloy),
             cube("meter_face",(1.669,1.56,1.62),(.033,.27,.29),dark),
             cube("meter_screen",(1.692,1.56,1.663),(.020,.185,.083),screen),
             pipe("ac_wall_conduit",[(1.59,.94,1.35),(1.55,1.10,1.19),(1.55,1.56,1.19),(1.58,1.56,1.325)],dark,.024))
+    kit.put("meter",_wall_label("meter_register","IN / OUT",(1.703,1.56,1.674),.024,trim),
+            _wall_label("meter_units","kWh",(1.703,1.56,1.646),.018,trim))
 
     service=[(1.59,1.56,1.80),(1.56,1.56,2.85),(4.75,-.62,3.58),(7,-2,4.5)]
     kit.put("grid",pipe("power_pole",[(7,-2,0),(7,-2,5)],kit.colors["bark"],.105),
@@ -301,6 +431,28 @@ def electrical(kit):
                            "battery_detail":(.7,-6,5)}
     kit.camera_minimum={"inverter":2.1,"breaker_detail":1.65,"porch_fixture":1.65,
                         "meter_detail":1.5,"battery_detail":2.4}
+
+
+def _roof_leaf(kit):
+    finish=material("pv_leaf_olive",(.16,.19,.035),roughness=.84)
+    vein=material("pv_leaf_vein",(.28,.24,.081),roughness=.82)
+    outline=[(0,-.145),(.046,-.115),(.036,-.094),(.075,-.07),(.061,-.048),
+             (.092,-.012),(.074,.007),(.083,.04),(.062,.053),(.062,.087),
+             (.035,.095),(.022,.126),(0,.158),(-.026,.122),(-.043,.101),
+             (-.04,.074),(-.071,.057),(-.062,.035),(-.084,.003),
+             (-.065,-.015),(-.072,-.051),(-.049,-.062),(-.05,-.096)]
+    def point(u,v,offset):
+        return roof_surface_point(1.17,.18,u+.25*v,v-.19*u,offset=offset)
+    vertices=[point(u,v,.211) for u,v in outline]+[point(0,0,.233)]
+    centre=len(outline)
+    faces=[(i,(i+1)%centre,centre) for i in range(centre)]
+    mesh=bpy.data.meshes.new("roof_leaf")
+    mesh.from_pydata(vertices,[],faces)
+    mesh.materials.append(finish)
+    leaf=bpy.data.objects.new("sf_roof_leaf",mesh)
+    bpy.context.collection.objects.link(leaf)
+    kit.put("pv_shade",leaf,pipe("leaf_midrib",[
+        point(0,-.179,.215),point(0,0,.236),point(0,.143,.215)],vein,.003))
 
 
 def cell_stage(kit):
@@ -344,7 +496,7 @@ def cell_stage(kit):
         kit.put("pv_cell",cube("pv_macro_busbar",(x,y,1.21),(1.87,.061,.026),metal))
     kit.put("pv_light",pipe("macro_light_guide",[(x-.60,-.73,2.01),(x-.29,-.65,1.20)],kit.colors["sun"],.019))
     kit.put("pv_carriers",pipe("macro_electron_guide",[(x-.14,-.665,.96),(x+.59,-.666,1.12)],silicon_a,.017))
-    kit.put("pv_shade",cube("pv_shadow_patch",roof_surface_point(1.17,.18,0,0,offset=.205),(.26,.36,.018),slate,tilt=ROOF_PITCH))
+    _roof_leaf(kit)
     # The diode spans the shaded series group, while the other groups remain in circuit.
     bx=x+5
     module=cube("bypass_module_frame",(bx,0,.81),(2.74,1.08,.13),metal)

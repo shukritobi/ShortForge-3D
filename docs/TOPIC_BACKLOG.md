@@ -1,5 +1,7 @@
 # ShortForge episode pitches
 
+[Read the ten current narration drafts and their shot plans](EPISODE_SCRIPTS.md).
+
 The 45–60 second cut opens on something the viewer can see and predict. Change one thing in a comparison, reveal the hidden mechanism with a cutaway, then reverse the condition and return to the opening shot. Use the same suburban set where it helps connect the episodes. Let the narration identify each object as the camera lands on it.
 
 ## 1. Why two compost bins smell different
@@ -74,7 +76,7 @@ The 45–60 second cut opens on something the viewer can see and predict. Change
 
 **55-second cut.** 0–5s reveal matching windows. 5–17s pull a pane apart into the glass, gap and coated surface. 17–31s show the coating reducing long-wave radiative heat transfer. 31–45s switch to the solar-gain question, showing why a window specification also considers incoming sun. 45–55s collapse both panes back into the same visual.
 
-**Production detail.** Give visible light and infrared separate treatments. Low-E products vary in solar heat gain. Avoid presenting all coatings as equivalent. [DOE window types and technologies](https://www.energy.gov/energysaver/window-types-and-technologies)
+**Production detail.** Give visible light and infrared separate treatments. Low-E products vary in solar heat gain. Avoid presenting all coatings as equivalent. [DOE high-performance window glass](https://bsesc.energy.gov/energy-basics/high-performance-window-systems-glass) · [DOE window performance ratings](https://www.energy.gov/cmei/femp/purchasing-energy-efficient-residential-windows-doors-and-skylights)
 
 ## 8. When opening a second window helps a house cool
 
@@ -90,7 +92,7 @@ The 45–60 second cut opens on something the viewer can see and predict. Change
 
 **45-second cut.** 0–4s show the water cresting the bend. 4–15s pull back to expose the source surface and lower outlet. 15–30s follow the continuous filled column and reveal the overall elevation drop. 30–39s lift the outlet to source level, then show the effect of an air break in a separate shot. 39–45s reset the outlet and loop to the high bend.
 
-**Production detail.** Mark both elevations. Use a prefilled demonstration tube and an unbroken liquid column for the operating case. Reuse the transparent plumbing kit from the drain episode. [USGS siphon hydraulics reference](https://pubs.usgs.gov/wsp/1615d/report.pdf)
+**Production detail.** Mark both elevations. Use a prefilled demonstration tube and an unbroken liquid column for the operating case. Reuse the transparent plumbing kit from the drain episode. [Princeton siphon analysis](https://kirkmcd.princeton.edu/examples/siphon.pdf)
 
 ## 10. Why two roofs heat up differently in the same sun
 
@@ -106,24 +108,4 @@ The 45–60 second cut opens on something the viewer can see and predict. Change
 2. **Home wind.** Reuse the solar street and roof. Make the opening rotors turn similarly so the daily-energy reveal answers a real question. Keep power traces and the accumulating totals in the same shot.
 3. **Sink trap.** Reuse the water assets and keep the frame on the water seal. This can share a transparent-pipe kit with the siphon episode and establish a repeatable “hidden inside the house” series.
 
-## Narration drafts for the first three
-
-Measure these drafts with the chosen voice before committing to cut lengths.
-
-### Same scraps, two compost bins
-
-“Same scraps. Why does this bin smell rotten? Look at the cutaway. Wet scraps have settled into a mat, and air struggles to move through it. Now watch what happens when we mix the same scraps with dry leaves and some coarse pieces. Those spaces let air reach deeper into the pile. Microbes use oxygen as they break down the material, and an active pile can warm up in the middle. Give it time, and the pieces get harder to recognize. So before you blame the scraps, look at the texture. Can you see the space between the pieces?”
-
-**Opening test.** Try the lid reveal against a close shot of the handfuls. Use matching scraps and distinct textures in both. The lid version sells the mystery. The texture version gets straight to the answer.
-
-### The roof turbine test
-
-“Both turbines are spinning. Which one delivers more energy by tonight? Follow the wind over the roof. It bends around the ridge and tumbles behind it, so the rooftop rotor sees changing flow. This second turbine sits in a steadier stream in our test. Watch the two power traces. The roof turbine has bursts, but the other one keeps producing between them. Add up the energy over the same hours and the totals pull apart. Change the wind direction and the result can change again. If you were picking a site, where would you measure the wind first?”
-
-**Opening test.** Compare the two turning rotors against a single close-up and a power trace that keeps falling. Use the trace only if the power label is legible on a phone.
-
-### The water your sink keeps
-
-“Watch the last of this water. Some stays here on purpose. That bend is a trap. The water fills the passage, so air from farther down the drain can’t go straight through. Now leave the second sink unused. Over time its water can evaporate until there’s a clear path for air. A pressure change can also disturb the seal, which is one reason plumbing uses vents. Watch what happens when we refill this trap. The sink drains, the bend keeps enough water to close the air path, and we’re back at that little pool we started with.”
-
-**Opening test.** Start on the final drop of water in one cut and the dry versus full air-path comparison in another. Check that the audience can see the seal before adding labels.
+**Opening tests.** Compare the compost lid reveal with a close shot of two handfuls. For wind, try two turning rotors against one rotor with a falling power trace. For the trap, compare the final drop against the dry and full air-path demo.

@@ -70,6 +70,19 @@ blade meshes add variation. The car and cyclist share the street scale.
 Background houses stay outside the main camera bounds. The two PV demonstration
 models sit on a small separate set, clear of the street.
 
+The daylight revision uses a procedural sky and cloud background, a deeper
+tree line, siding and roof relief, and a leaf mesh on the shaded cell. Large
+area lights fill the service wall, porch and side yard. Separate lights cover
+the silicon and diode demonstration sets. Check lighting on the subject's face
+and retain enough contrast to distinguish its edges, labels and neighbouring
+parts. The meter and breaker labels are part of the 3D models.
+
+The full cut uses Blender 4.5.2 EEVEE with its ray-tracing option off. A Cycles
+OptiX still of the same breaker shot provides a reference for the additional
+bounce lighting. The side-by-side image includes the previous cut, daylight
+EEVEE and the Cycles still. Use `output/solar_daylight` for the current movie
+and `output/solar_daylight_comparison` for that comparison.
+
 Check the six story frames and the additional audit angles before full renders.
 The Blender audit measures 12 panel/rail contacts, meter attachment, three
 lamp clearances and the two true facade openings. Materials and the set can

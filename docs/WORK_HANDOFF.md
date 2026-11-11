@@ -10,7 +10,7 @@ Qwen inference on cuda:0. Main venv Python 3.14; isolated TTS runtime retained.
 ## Current direction
 
 - Start from `examples/solar_neighbourhood_112s_v2.json` and
-  `output/solar_director`. The user liked the previous cut's direction and asked
+  `output/solar_daylight`. The user liked the previous cut's direction and asked
   for slightly faster, consistent narration, quieter openings, clearer
   camera-to-narration timing, and a coherent, detailed neighbourhood.
 - The director cut uses one pitch-preserving 1.07× adjustment across all 12
@@ -28,6 +28,17 @@ Qwen inference on cuda:0. Main venv Python 3.14; isolated TTS runtime retained.
   proportions across neighbouring houses. Vary the siding, planting, lawn
   tufts and chimney placement. Keep electrical hardware spatially separate
   from the porch light. See `docs/SOLAR_PRODUCTION.md`.
+- The daylight cut adds a blue sky, clouds, a deeper tree line, siding and
+  roof relief, a roof leaf and readable electrical labels. Use large soft
+  lights to keep the narrated subject legible while preserving the shadow
+  edges that show depth. The full movie uses EEVEE with ray tracing off.
+  `output/solar_daylight_comparison` includes a Cycles OptiX still of the
+  breaker shot. The 112-second daylight movie passed full decode and
+  black-frame checks. Its narration WAV matches the preceding cut.
+- `docs/EPISODE_SCRIPTS.md` contains all ten voiceover drafts with five
+  timed picture beats and primary references per topic. The 51–56 second
+  runtimes are editorial targets. Measure the final narration before
+  locking shots.
 - `docs/TOPIC_BACKLOG.md` holds ten researched pitches with hooks, visual beats
   and source links. Start with the compost-bin comparison, then home wind and
   the sink trap. Open with a visible contradiction, use a cutaway to explain

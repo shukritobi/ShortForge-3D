@@ -245,6 +245,9 @@ def configure_scene(story):
     lamp.data.shape="DISK"
     lamp.data.size=9
     lamp.rotation_euler=(Vector((0,0,0))-lamp.location).to_track_quat("-Z","Y").to_euler()
+    if story["scene_template"]=="solar_home":
+        from solar_neighbourhood import solar_lighting
+        solar_lighting(scene,sun,lamp)
     bpy.ops.object.camera_add(location=(12,-25,15))
     cam=bpy.context.object
     cam.name="sf2_portrait_camera"
@@ -336,7 +339,8 @@ def emit_scene_manifest(scene,story,kit,output):
         "assets":{k:len(v) for k,v in kit.groups.items()},
         "object_count":len(bpy.data.objects),"action_count":sum(len(b["actions"]) for b in story["beats"]),
         "camera_presets":list(dict.fromkeys(b["camera"] for b in story["beats"])),
-        "renderer":"blender_v2","fingerprint":fingerprint(story),
+        "renderer":"blender_v2","engine":scene.render.engine,
+        "eevee_raytracing":scene.eevee.use_raytracing,"fingerprint":fingerprint(story),
         "asset_instances":[{"id":obj.name,"category":group,"units":"metres",
                             "version":"0.2.0","dimensions":list(obj.dimensions),
                             "dependencies":kit.dependencies.get(group,[])}
