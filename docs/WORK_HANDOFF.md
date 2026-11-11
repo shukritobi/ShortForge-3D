@@ -59,6 +59,13 @@ Qwen inference on cuda:0. Main venv Python 3.14; isolated TTS runtime retained.
   stills, then checks the full MP4. Use `--episode episode_compost` to rerun
   only one episode. The working projects are in `output/season_one`, and
   passing exports can go to the Drive review folder `outbox/season_one`.
+- Delivery checkpoint. Latest Review holds the verified 112-second energy
+  cut, with the daylight cut in the review archive. All ten captioned
+  episodes are in `outbox/season_one` and indexed in `Season review.md`.
+  Runtimes are 44–57 seconds at one 1.07× narration setting. All ten passed
+  full decode, timing, black-frame and Drive checksum checks. The siphon
+  episode was re-exported after correcting the outlet animation. Human
+  listening review remains open.
 - `docs/TOPIC_BACKLOG.md` holds ten researched pitches with hooks, visual beats
   and source links. Start with the compost-bin comparison, then home wind and
   the sink trap. Open with a visible contradiction, use a cutaway to explain
